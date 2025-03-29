@@ -1,0 +1,19 @@
+{
+  "name": "projet_sentinelle_back",
+  "version": "1.0.0",
+  "description": "API backend du projet sentinelle",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ibikivan/projet_sentinelle_back.git"
+  },
+  "author": "@ibikivan",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Ibikivan/projet_sentinelle_back/issues"
+  },
+  "homepage": "https://github.com/Ibikivan/projet_sentinelle_back#readme"
+}
