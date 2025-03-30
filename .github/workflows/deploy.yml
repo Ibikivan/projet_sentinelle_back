@@ -20,9 +20,9 @@ jobs:
     #   run: npm test
 
     - name: Sync files with rsync
-      uses: burnett01/rsync-deployments@5.2.3
+      uses: burnett01/rsync-deployments@v5.2.3  # Ajouter le 'v' devant la version
       with:
-        switches: -avzr --delete --exclude={'node_modules/','.env','.git'}
+        switches: -avzr --delete --exclude={'node_modules/','.git'}
         path: ./
         remote_path: /opt/backend/
         remote_host: ${{ secrets.EC2_HOST }}
