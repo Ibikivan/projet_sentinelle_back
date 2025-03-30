@@ -19,15 +19,17 @@ jobs:
     # - name: Run tests
     #   run: npm test
 
-    - name: Sync files with rsync
-      uses: burnett01/rsync-deployments@v5.2.3  # Ajouter le 'v' devant la version
+    - name: Deploy with rsync
+      uses: appleboy/ssh-action@v1.0.0
       with:
-        switches: -avzr --delete --exclude={'node_modules/','.git'}
-        path: ./
-        remote_path: /opt/backend/
-        remote_host: ${{ secrets.EC2_HOST }}
-        remote_user: ${{ secrets.EC2_USER }}
-        remote_key: ${{ secrets.EC2_SSH_KEY }}
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          rsync -avz --delete -e "ssh -i /home/deployer/.ssh/github_actions" \
+            --exclude='node_modules' \
+            --exclude='.git' \
+            $GITHUB_WORKSPACE/ deployer@${{ secrets.EC2_HOST }}:/opt/backend/
 
     - name: Restart PM2
       uses: appleboy/ssh-action@v1.0.0
