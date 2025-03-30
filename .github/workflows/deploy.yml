@@ -19,6 +19,11 @@ jobs:
     # - name: Run tests
     #   run: npm test
 
+    - name: Add remote host to known_hosts
+      run: |
+        mkdir -p ~/.ssh
+        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
     - name: Deploy with rsync
       uses: appleboy/ssh-action@v1.0.0
       with:
