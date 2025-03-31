@@ -23,19 +23,21 @@ jobs:
       run: |
         mkdir -p ~/.ssh
         echo "${{ secrets.KNOWN_HOSTS }}" > ~/.ssh/known_hosts
-        chmod 600 ~/.ssh/known_hosts
+        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/github_actions
+        chmod 600 ~/.ssh/*
+        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
   
     - name: Deploy with rsync
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.EC2_SSH_KEY }}
+        key: ~/.ssh/github_actions
         script: |
           rsync -avz --delete \
-          -e "ssh -o LogLevel=DEBUG3 -v" \
-          --exclude={'node_modules','.git','.env'} \
-          "$GITHUB_WORKSPACE/" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/opt/backend/
+            -e "ssh -o StrictHostKeyChecking=accept-new -i ~/.ssh/github_actions" \
+            --exclude={'node_modules','.git','.env'} \
+            "$GITHUB_WORKSPACE/" /opt/backend/
 
     - name: Restart PM2
       uses: appleboy/ssh-action@v1.0.0
