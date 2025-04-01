@@ -34,14 +34,11 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/github_actions
-          chmod 600 ~/.ssh/github_actions
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+          cd $GITHUB_WORKSPACE
           rsync -avz --delete \
             -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/github_actions" \
             --exclude=node_modules --exclude=.git --exclude=.env \
-            "$GITHUB_WORKSPACE/" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/opt/backend/
+            "./" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/opt/backend/
 
     - name: Restart PM2
       uses: appleboy/ssh-action@v1.0.0
