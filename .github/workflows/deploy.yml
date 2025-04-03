@@ -2,52 +2,28 @@ name: Deploy to EC2
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      # Étape 1 : Récupérer le code source
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: npm install
+      # (Optionnel) Étape de build ou de tests
+      # - name: Build project
+      #   run: npm install && npm run build
 
-    # (Optionnel) Ajouter des tests ici
-    # - name: Run tests
-    #   run: npm test
-
-    - name: Setup SSH
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.KNOWN_HOSTS }}" > ~/.ssh/known_hosts
-        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/github_actions
-        chmod 600 ~/.ssh/*
-        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-  
-    - name: Deploy with rsync
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.EC2_SSH_KEY }}
-        script: |
-          cd $GITHUB_WORKSPACE
-          rsync -avz --delete \
-            -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/github_actions" \
-            --exclude=node_modules --exclude=.git --exclude=.env \
-            "./" ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/opt/backend/
-
-    - name: Restart PM2
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.EC2_SSH_KEY }}
-        script: |
-          cd /opt/backend
-          npm install --production
-          pm2 reload ecosystem.config.js --env production
-          pm2 save
+      # Étape 2 : Copier les fichiers sur le serveur
+      - name: Copy files to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "./"           # Ajustez ce chemin selon ce que vous souhaitez déployer (par exemple, le dossier build/dist)
+          target: "/opt/backend"  # Chemin sur le serveur où déposer les fichiers
