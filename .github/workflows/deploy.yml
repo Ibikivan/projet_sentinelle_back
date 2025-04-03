@@ -27,3 +27,18 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "./"           # Ajustez ce chemin selon ce que vous souhaitez déployer (par exemple, le dossier build/dist)
           target: "/opt/backend"  # Chemin sur le serveur où déposer les fichiers
+
+      # Étape 3 : Exécuter les commandes de déploiement sur le serveur
+      - name: Run remote deployment commands
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /opt/backend
+            # Installe les dépendances en mode production (assurez-vous d’avoir un package.json sur le serveur)
+            # npm install --production
+            # Redémarre l’application via PM2 (adaptez la commande à votre configuration)
+            pm2 reload ecosystem.config.js --env production
+            pm2 save

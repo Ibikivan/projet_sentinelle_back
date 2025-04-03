@@ -2,7 +2,7 @@ module.exports = {
     apps: [{
       name: "api",
       script: "server.js",  // Adaptez à votre point d'entrée
-      instances: "max",
+      instances: "1",
       autorestart: true,
       env: {
         NODE_ENV: "production",
