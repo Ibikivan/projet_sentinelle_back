@@ -38,7 +38,7 @@ jobs:
           script: |
             cd /opt/backend
             # Installe les dépendances en mode production (assurez-vous d’avoir un package.json sur le serveur)
-            npm install --production
+            yarn install --production
             # Redémarre l’application via PM2 (adaptez la commande à votre configuration)
             pm2 reload ecosystem.config.js --env production
             pm2 save
