@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/Ibikivan/projet_sentinelle_back/issues"
   },
-  "homepage": "https://github.com/Ibikivan/projet_sentinelle_back#readme"
+  "homepage": "https://github.com/Ibikivan/projet_sentinelle_back#readme",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
 }
