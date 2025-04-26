@@ -22,7 +22,7 @@ const City = sequelize.define('City', {
         type: DataTypes.STRING,
         allowNull: false,
         // validate: {
-        //     is: /^[A-Z]{2}$/, // 2-letter uppercase country code
+        //     is: /^[A-Z]{2}$/, // 2-letter uppercase country code for later use
         // },
     },
 }, {
