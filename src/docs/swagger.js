@@ -10,7 +10,7 @@ const options = {
         version: '1.0.0',
         description: 'API documentation for Sentille Prayer Project',
     },
-    servers: [{ url: `http://localhost:${process.env.PORT}/api` }],
+    servers: [{ url: `${process.env.BACKEND_ENDPOINT}/api` }],
     components: {
       securitySchemes: {
         cookieAuth: {
