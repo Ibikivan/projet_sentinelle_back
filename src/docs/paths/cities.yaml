@@ -1,0 +1,186 @@
+paths:
+  /cities:
+    post:
+      summary: Créer une nouvelle ville
+      description: Ajoute une nouvelle ville à la base de données.
+      tags:
+        - Cities
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Paris
+                code:
+                  type: string
+                  example: PAR
+                country:
+                  type: string
+                  example: FR
+              required:
+                - name
+                - code
+                - country
+      responses:
+        '201':
+          description: Ville créée avec succès.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: City created successfully
+                  city:
+                    $ref: '#/components/schemas/City'
+        '400':
+          description: Erreur de validation ou ville déjà existante.
+        '500':
+          description: Erreur interne du serveur.
+
+    get:
+      summary: Récupérer toutes les villes
+      description: Retourne une liste de toutes les villes disponibles dans la base de données.
+      tags:
+        - Cities
+      responses:
+        '200':
+          description: Liste des villes récupérée avec succès.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/City'
+        '500':
+          description: Erreur interne du serveur.
+
+  /cities/{id}:
+    get:
+      summary: Récupérer une ville par ID
+      description: Retourne les détails d'une ville spécifique en fonction de son ID.
+      tags:
+        - Cities
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de la ville.
+      responses:
+        '200':
+          description: Ville récupérée avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/City'
+        '404':
+          description: Ville non trouvée.
+        '500':
+          description: Erreur interne du serveur.
+
+    put:
+      summary: Mettre à jour une ville
+      description: Met à jour les informations d'une ville existante.
+      tags:
+        - Cities
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de la ville.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Paris
+                code:
+                  type: string
+                  example: PAR
+                country:
+                  type: string
+                  example: FR
+      responses:
+        '200':
+          description: Ville mise à jour avec succès.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: City updated successfully
+                  city:
+                    $ref: '#/components/schemas/City'
+        '404':
+          description: Ville non trouvée.
+        '500':
+          description: Erreur interne du serveur.
+
+    delete:
+      summary: Supprimer une ville
+      description: Supprime une ville existante en fonction de son ID.
+      tags:
+        - Cities
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de la ville.
+      responses:
+        '200':
+          description: Ville supprimée avec succès.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: City deleted successfully
+        '404':
+          description: Ville non trouvée.
+        '500':
+          description: Erreur interne du serveur.
+
+components:
+  schemas:
+    City:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Paris
+        code:
+          type: string
+          example: PAR
+        country:
+          type: string
+          example: FR
+        createdAt:
+          type: string
+          format: date-time
+          example: 2025-04-28T12:34:56Z
+        updatedAt:
+          type: string
+          format: date-time
+          example: 2025-04-28T12:34:56Z

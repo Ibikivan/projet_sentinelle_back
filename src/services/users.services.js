@@ -1,14 +1,12 @@
 const { sequelize } = require('../model');
-const usersRepositories = require('../repositories/usersRepositories');
+const usersRepositories = require('../repositories/users.repositories');
+const { formatUserPhoneNumber } = require('../utils');
+const bcrypt = require('bcrypt');
 
 async function createUser(user) {
     return await sequelize.transaction(async (transaction) => {
-        const phoneIndex = '+237';
-
-        if (!user.phoneNumber.startsWith(phoneIndex)) {
-            user.phoneNumber = phoneIndex + user.phoneNumber;
-        }
-
+        formatUserPhoneNumber(user);
+        user.password = await bcrypt.hash(user.password, 10);
         const newUser = await usersRepositories.createUser(user, transaction);
         return newUser; 
     });
@@ -30,7 +28,14 @@ async function updateUser(id, user) {
         if (!userExists) {
             throw new Error('User not found');
         }
-        const updated = await usersRepositories.updateUser(id, user, transaction);
+        const newUser = {
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            profilePicture: user.profilePicture,
+            cityId: user.cityId,
+        }
+        const updated = await usersRepositories.updateUser(id, newUser, transaction);
         return updated;
     });
 }

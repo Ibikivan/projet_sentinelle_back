@@ -1,0 +1,241 @@
+paths:
+  /users:
+    post:
+      summary: Enregistrer un nouvel utilisateur
+      description: Crée un nouvel utilisateur dans la base de données.
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phoneNumber:
+                  type: string
+                  example: "+237612345678"
+                email:
+                  type: string
+                  example: "user@example.com"
+                password:
+                  type: string
+                  example: "Password123!"
+                firstName:
+                  type: string
+                  example: "John"
+                lastName:
+                  type: string
+                  example: "Doe"
+                profilePicture:
+                  type: string
+                  example: "https://example.com/profile.jpg"
+                cityId:
+                  type: integer
+                  example: 1
+              required:
+                - phoneNumber
+                - password
+                - firstName
+                - lastName
+                - cityId
+      responses:
+        '201':
+          description: Utilisateur créé avec succès.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User created successfully
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Erreur de validation ou utilisateur déjà existant.
+        '500':
+          description: Erreur interne du serveur.
+
+    get:
+      summary: Récupérer tous les utilisateurs
+      description: Retourne une liste de tous les utilisateurs disponibles dans la base de données.
+      tags:
+        - Users
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Liste des utilisateurs récupérée avec succès.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '500':
+          description: Erreur interne du serveur.
+
+  /users/{id}:
+    get:
+      summary: Récupérer un utilisateur par ID
+      description: Retourne les détails d'un utilisateur spécifique en fonction de son ID.
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de l'utilisateur.
+      responses:
+        '200':
+          description: Utilisateur récupéré avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: Utilisateur non trouvé.
+        '500':
+          description: Erreur interne du serveur.
+
+    put:
+      summary: Mettre à jour un utilisateur
+      description: Met à jour les informations d'un utilisateur existant.
+      tags:
+        - Users
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de l'utilisateur.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phoneNumber:
+                  type: string
+                  example: "+237612345678"
+                email:
+                  type: string
+                  example: "user@example.com"
+                firstName:
+                  type: string
+                  example: "John"
+                lastName:
+                  type: string
+                  example: "Doe"
+                profilePicture:
+                  type: string
+                  example: "https://example.com/profile.jpg"
+                cityId:
+                  type: integer
+                  example: 1
+      responses:
+        '200':
+          description: Utilisateur mis à jour avec succès.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User updated successfully
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '404':
+          description: Utilisateur non trouvé.
+        '500':
+          description: Erreur interne du serveur.
+
+    delete:
+      summary: Supprimer un utilisateur
+      description: Supprime un utilisateur existant en fonction de son ID.
+      tags:
+        - Users
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de l'utilisateur.
+      responses:
+        '200':
+          description: Utilisateur supprimé avec succès.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User deleted successfully
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '403':
+          description: Accès refusé. L'utilisateur doit être un administrateur.
+        '404':
+          description: Utilisateur non trouvé.
+        '500':
+          description: Erreur interne du serveur.
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        phoneNumber:
+          type: string
+          example: "+237612345678"
+        email:
+          type: string
+          example: "user@example.com"
+        firstName:
+          type: string
+          example: "John"
+        lastName:
+          type: string
+          example: "Doe"
+        profilePicture:
+          type: string
+          example: "https://example.com/profile.jpg"
+        cityId:
+          type: integer
+          example: 1
+        isVerified:
+          type: boolean
+          example: false
+        createdAt:
+          type: string
+          format: date-time
+          example: 2025-04-28T12:34:56Z
+        updatedAt:
+          type: string
+          format: date-time
+          example: 2025-04-28T12:34:56Z
+
+securitySchemes:
+  cookieAuth:
+    type: apiKey
+    in: cookie
+    name: session

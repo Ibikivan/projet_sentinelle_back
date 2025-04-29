@@ -1,0 +1,84 @@
+paths:
+  /auth/login:
+    post:
+      summary: Connexion utilisateur
+      description: Permet à un utilisateur de se connecter en fournissant ses informations d'identification.
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phoneNumber:
+                  type: string
+                  example: "+237612345678"
+                password:
+                  type: string
+                  example: "Password123!"
+              required:
+                - phoneNumber
+                - password
+      responses:
+        '200':
+          description: Connexion réussie.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Login successful
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Erreur de validation ou informations incorrectes.
+        '500':
+          description: Erreur interne du serveur.
+
+  /auth/change-phone-number:
+    post:
+      summary: Demande de changement de numéro de téléphone
+      description: Permet à un utilisateur connecté de demander un changement de numéro de téléphone.
+      tags:
+        - Auth
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newPhoneNumber:
+                  type: string
+                  example: "+237698765432"
+              required:
+                - newPhoneNumber
+      responses:
+        '200':
+          description: Demande de changement de numéro de téléphone réussie.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Phone number change request successful
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '400':
+          description: Erreur de validation ou numéro déjà utilisé.
+        '500':
+          description: Erreur interne du serveur.
+
+securitySchemes:
+  cookieAuth:
+    type: apiKey
+    in: cookie
+    name: connect.sid

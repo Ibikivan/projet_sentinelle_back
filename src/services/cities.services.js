@@ -1,5 +1,5 @@
 const { sequelize } = require('../model');
-const citiesRepositories = require('../repositories/citiesRepositories');
+const citiesRepositories = require('../repositories/cities.repositories');
 
 async function addCity(city) {
     return await sequelize.transaction(async (transaction) => {

@@ -1,6 +1,9 @@
 const sequelize = require('../config/database');
 const User = require('./User');
 const City = require('./City');
+const Otp = require('./Otp');
+
+Otp.belongsTo(User, { foreignKey: 'userId' });
 
 async function testDBConnexion() {
     try {
@@ -13,7 +16,7 @@ async function testDBConnexion() {
 
 async function syncDB() {
     try {
-        await sequelize.sync();
+        await sequelize.sync({ alter: true });
         console.log('Database synchronized successfully.');
     } catch (error) {
         throw new Error('Unable to synchronize the database:', error);
@@ -21,9 +24,10 @@ async function syncDB() {
 }
 
 module.exports = {
-    testDBConnexion,
-    syncDB,
     User,
     City,
+    Otp,
+    testDBConnexion,
+    syncDB,
     sequelize,
 };

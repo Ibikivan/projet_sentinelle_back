@@ -20,6 +20,11 @@ const User = sequelize.define('User', {
             this.setDataValue('phoneNumber', value.replace(/\s+/g, ''));
         },
     },
+    role: {
+        type: DataTypes.ENUM('USER', 'ADMIN'),
+        allowNull: false,
+        defaultValue: 'USER',
+    },
     email: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -30,11 +35,7 @@ const User = sequelize.define('User', {
     },
     password: {
         type: DataTypes.STRING,
-        allowNull: false,
-        validate: {
-            len: [8, 100], // Minimum length of 8 characters
-            is: /^[a-zA-Z0-9!@#$%^&*]+$/ // Alphanumeric and special characters
-        }
+        allowNull: false
     },
     firstName: {
         type: DataTypes.STRING,
@@ -51,24 +52,6 @@ const User = sequelize.define('User', {
             isUrl: true,
         },
     },
-    otpHash: {
-        type: DataTypes.STRING,
-        allowNull: true,
-        validate: {
-            is: /^[0-9]{6}$/, // 6-digit OTP
-        }
-    },
-    otpExpireAt: {
-        type: DataTypes.DATE,
-        allowNull: true,
-        validate: {
-            isDate: true,
-        },
-    },
-    isVerified: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-    },
     cityId: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -76,19 +59,15 @@ const User = sequelize.define('User', {
             model: City,
             key: 'id',
         },
+    },
+    tokenRevokedBefore: {
+        type: DataTypes.DATE,
+        allowNull: true,
     }
 }, {
     tableName: 'users',
     timestamps: true,
-    hooks: {
-        beforeCreate: async (user) => {
-            user.password = await bcrypt.hash(user.password, 10);
-        },
-    },
     instanceMethods: {
-        comparePassword(password) {
-            return bcrypt.compare(password, this.password);
-        },
         async hashOtp(otp) {
             this.otpHash = await bcrypt.hash(otp, 10);
             this.otpExpireAt = new Date(Date.now() + 10 * 60 * 1000); // OTP valid for 10 minutes
