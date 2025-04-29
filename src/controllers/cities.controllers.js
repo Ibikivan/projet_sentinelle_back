@@ -1,4 +1,4 @@
-const citiesServices = require('../services/citiesServices');
+const citiesServices = require('../services/cities.services');
 
 async function createCity(req, res, next) {
     try {
