@@ -22,7 +22,7 @@ app.use(cors({
 
 app.use(express.json());
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, null, {
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(specs, null, {
     swaggerOptions: {
         withCredentials: true,
     }
