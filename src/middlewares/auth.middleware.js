@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const createError = require('http-errors'); // pour gérer proprement 401/403
-const usersRepositories = require('../repositories/users.repositories')
+const usersRepositories = require('../repositories/users.repositories');
+const { AuthentificationError, AuthorizationError } = require('../utils/errors.classes');
 
 /**
  * @function authenticate
@@ -10,24 +11,28 @@ const usersRepositories = require('../repositories/users.repositories')
  * @returns {void|Error}
  */
 async function authenticate(req, res, next) {
-  console.log('Cookie token:', req.cookies.session);
   try {
     const token = req.cookies.session;
-    if (!token) throw createError(401, 'Missing token');
+    if (!token) throw new AuthentificationError('Missing token');
 
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
-    const user = usersRepositories.getUserById(payload.sub);
+    let payload;
+    try {
+      payload = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (error) {
+      throw new AuthentificationError('Invalid token')
+    };
+
+    const user = await usersRepositories.getUserById(payload.id);
+    if (!user) throw new AuthentificationError('Authenticated user not found');
 
     if (user.tokenRevokedBefore && payload.iat * 1000 < user.tokenRevokedBefore.getTime()) {
-        throw new Error('Token expired by logout');
+      throw new AuthentificationError('Token expired by logout');
     }
 
     req.user = user;
-
     next();
-  } catch (err) {
-    // Différencier TokenExpiredError vs autres ?
-    return next(createError(401, 'Unauthorized'));
+  } catch (error) {
+    return next(error);
   }
 }
 
@@ -39,10 +44,10 @@ async function authenticate(req, res, next) {
 function authorize(...allowedRoles) {
   return (req, res, next) => {
     if (!req.user) {
-      return next(createError(401, 'Unauthorized'));
+      throw new AuthentificationError('Not authenticated user');
     }
     if (!allowedRoles.includes(req.user.role)) {
-      return next(createError(403, 'Access denied'));
+      throw new AuthorizationError('Access denied');
     }
     next();
   };

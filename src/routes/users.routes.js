@@ -6,8 +6,11 @@ const router = express.Router();
 
 router.post('/', usersController.registerUser);
 router.get('/', authenticate, usersController.getAllUsers);
-router.get('/:id', usersController.getUserById);
-router.put('/:id', authenticate, usersController.updateUser);
+router.put('/', authenticate, usersController.updateUser);
+router.get('/details', authenticate, usersController.getUserDetails);
+router.delete('/', authenticate, usersController.deleteProfile);
+router.get('/:id', authenticate, usersController.getUserById); // Obtenir le profil public d'un utilisateur
+router.put('/:id', authenticate, authorize('ADMIN'), usersController.adminUpdateUser);
 router.delete('/:id', authenticate, authorize('ADMIN'), usersController.deleteUser);
 
 module.exports = router;

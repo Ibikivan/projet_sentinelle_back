@@ -2,6 +2,8 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const User = require('./User');
 
+const OTP_TTL_MINUTES = parseInt(process.env.OTP_TTL_MINUTES, 10) || 15;
+
 const Otp = sequelize.define('Otp', {
     id: {
         type: DataTypes.INTEGER,
@@ -34,7 +36,6 @@ const Otp = sequelize.define('Otp', {
     expiresAt: {
         type: DataTypes.DATE,
         allowNull: false,
-        defaultValue: DataTypes.NOW,
         validate: {
             isDate: true,
         },
@@ -49,6 +50,10 @@ const Otp = sequelize.define('Otp', {
         allowNull: false,
         defaultValue: false,
     },
+    verifiedAt: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
     ip: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -60,6 +65,11 @@ const Otp = sequelize.define('Otp', {
     tableName: 'otps',
     timestamps: true,
     paranoid: true,
+    hooks: {
+        beforeValidate(otp) {
+            if (!otp.expiresAt) otp.expiresAt = new Date(Date.now() + OTP_TTL_MINUTES * 60_000);
+        }
+    }
 });
 
 module.exports = Otp;

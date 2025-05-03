@@ -1,6 +1,6 @@
-const { path, request } = require('../../app');
 const authServices = require('../services/auth.services');
 const dotenv = require('dotenv');
+const { ValidationError } = require('../utils/errors.classes');
 dotenv.config();
 
 
@@ -39,22 +39,104 @@ async function login(req, res, next) {
 async function requestToChangePhoneNumber(req, res, next) {
     try {
         const { newPhoneNumber } = req.body;
-        const userId = req.user.id;
-        const ipAdress = req.ip;
+        if (!newPhoneNumber) return res.status(400).json({ message: 'New phone number is required' });
 
-        if (!newPhoneNumber) {
-            return res.status(400).json({ message: 'New phone number is required' });
-        }
-
-        const otpData = await authServices.requestToChangePhoneNumber(userId, newPhoneNumber, ipAdress);
-        res.status(200).json({ message: 'OTP sent successfully', otpData });
+        const otp = await authServices.requestToChangePhoneNumber(req.user.id, newPhoneNumber, req.ip);
+        res.status(200).json({ message: 'OTP sent successfully', otp });
     } catch (error) {
         console.error('Error during OTP request:', error);
         next(error);
     }
 };
 
+async function verifyOtp(req, res, next) {
+    try {
+        const { otpCode } = req.body;
+        if (!otpCode) return res.status(400).json({ message: 'OTP code is required' });
+        const otp = await authServices.verifyPhoneNumberOtp(req.user.id, otpCode);
+        res.status(200).json({ message: 'Phone number updated', otp });
+    } catch (error) {
+        next(error);
+    }
+};
+
+async function changePassword(req, res, next) {
+    try {
+        const { oldPassword, newPassword } = req.body;
+        if (!oldPassword || !newPassword) return res.status(400).json({ message: 'Old and new passwords are required' });
+        const result = await authServices.changePassword(req.user.id, oldPassword, newPassword);
+
+        res.clearCookie('session', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/api'
+        });
+        res.status(200).json({ message: 'Password changed', result });
+    } catch (error) {
+        next(error)
+    }
+};
+
+async function forgotPassword(req, res, next) {
+    try {
+        const { phoneNumber } = req.body;
+        if ( !phoneNumber ) res.status(400).json("Requester's phone number is required");
+
+        const otp = await authServices.requestToResetForgottenPassword(phoneNumber, req.ip);
+        res.status(200).json({ message: 'OTP sent successfully', otp });
+    } catch (error) {
+        next(error)
+    }
+}
+
+async function verifyPasswordOtp(req, res, next) {
+    try {
+        const { phoneNumber, otpCode } = req.body;
+        if (!phoneNumber || !otpCode) res.status(400).json({ message: "Requester's phone number and otp code are required" });
+
+        const otp = await authServices.verifyPasswordOtp(phoneNumber, otpCode);
+        res.status(200).json({ message: 'Otp verified successfully', otp });
+    } catch (error) {
+        next(error)
+    }
+};
+
+async function resetPassword(req, res, next) {
+    try {
+        const { otpId, newPassword } = req.body;
+        if (!otpId || !newPassword) res.status(400).json({ message: "Requester's phone number and otp id are requierd" });
+
+        const user = await authServices.resetPassword(otpId, newPassword);
+        res.status(200).json({ message: "Password reseted seccessfully", user });
+    } catch (error) {
+        next(error)
+    }
+};
+
+async function logout(req, res, next) {
+    try {
+        const user = await authServices.logout(req.user.id);
+
+        res.clearCookie('session', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/api'
+        });
+        res.status(200).json({ message: 'User successfully logged out', user });
+    } catch (error) {
+        next(error)
+    }
+};
+
 module.exports = {
     login,
-    requestToChangePhoneNumber
+    requestToChangePhoneNumber,
+    verifyOtp,
+    changePassword,
+    forgotPassword,
+    verifyPasswordOtp,
+    resetPassword,
+    logout
 };

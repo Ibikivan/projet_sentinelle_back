@@ -32,10 +32,13 @@ paths:
                   message:
                     type: string
                     example: Login successful
-                  user:
-                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
         '400':
           description: Erreur de validation ou informations incorrectes.
+        '401':
+          description: Identifiants invalides.
         '500':
           description: Erreur interne du serveur.
 
@@ -69,16 +72,291 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: Phone number change request successful
-        '401':
-          description: Non autorisé. L'utilisateur doit être connecté.
+                    example: OTP sent successfully
+                  otp:
+                    $ref: '#/components/schemas/Otp'
         '400':
           description: Erreur de validation ou numéro déjà utilisé.
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
         '500':
           description: Erreur interne du serveur.
+
+  /auth/verify-phone-otp:
+    post:
+      summary: Vérification du code OTP pour le changement de numéro de téléphone
+      description: Permet à un utilisateur connecté de vérifier le code OTP pour confirmer le changement de numéro de téléphone.
+      tags:
+        - Auth
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                otpCode:
+                  type: string
+                  example: "123456"
+              required:
+                - otpCode
+      responses:
+        '200':
+          description: Numéro de téléphone mis à jour avec succès.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Phone number updated
+        '400':
+          description: Format OTP invalide.
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '404':
+          description: OTP non trouvé.
+        '410':
+          description: OTP expiré.
+        '429':
+          description: Tentatives maximales dépassées.
+        '500':
+          description: Erreur interne du serveur.
+
+  /auth/change-password:
+    post:
+      summary: Changer le mot de passe de l'utilisateur connecté
+      description: Permet à un utilisateur connecté de changer son mot de passe.
+      tags:
+        - Auth
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                oldPassword:
+                  type: string
+                  example: "OldPassword123!"
+                newPassword:
+                  type: string
+                  example: "NewPassword123!"
+              required:
+                - oldPassword
+                - newPassword
+      responses:
+        '200':
+          description: Mot de passe changé avec succès.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password changed
+        '400':
+          description: Erreur de validation ou mot de passe invalide.
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '500':
+          description: Erreur interne du serveur.
+
+  /auth/forgot-password:
+    post:
+      summary: Demande de réinitialisation de mot de passe
+      description: Permet à un utilisateur de demander un code OTP pour réinitialiser son mot de passe.
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phoneNumber:
+                  type: string
+                  example: "+237612345678"
+              required:
+                - phoneNumber
+      responses:
+        '200':
+          description: OTP envoyé avec succès.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: OTP sent successfully
+                  otp:
+                    $ref: '#/components/schemas/Otp'
+        '400':
+          description: Numéro de téléphone requis ou invalide.
+        '404':
+          description: Utilisateur non trouvé.
+        '500':
+          description: Erreur interne du serveur.
+
+  /auth/verify-password-otp:
+    post:
+      summary: Vérification du code OTP pour réinitialiser le mot de passe
+      description: Permet à un utilisateur de vérifier le code OTP pour réinitialiser son mot de passe.
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phoneNumber:
+                  type: string
+                  example: "+237612345678"
+                otpCode:
+                  type: string
+                  example: "123456"
+              required:
+                - phoneNumber
+                - otpCode
+      responses:
+        '200':
+          description: OTP vérifié avec succès.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: OTP verified successfully
+        '400':
+          description: Format OTP invalide.
+        '404':
+          description: OTP ou utilisateur non trouvé.
+        '410':
+          description: OTP expiré.
+        '429':
+          description: Tentatives maximales dépassées.
+        '500':
+          description: Erreur interne du serveur.
+
+  /auth/reset-password:
+    post:
+      summary: Réinitialiser le mot de passe
+      description: Permet à un utilisateur de réinitialiser son mot de passe après vérification du code OTP.
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                otpId:
+                  type: integer
+                  example: 1
+                newPassword:
+                  type: string
+                  example: "NewPassword123!"
+              required:
+                - otpId
+                - newPassword
+      responses:
+        '200':
+          description: Mot de passe réinitialisé avec succès.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password reset successfully
+        '400':
+          description: Erreur de validation ou mot de passe invalide.
+        '404':
+          description: OTP ou utilisateur non trouvé.
+        '410':
+          description: OTP expiré.
+        '500':
+          description: Erreur interne du serveur.
+
+  /auth/logout:
+    post:
+      summary: Déconnexion utilisateur
+      description: Permet à un utilisateur connecté de se déconnecter.
+      tags:
+        - Auth
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Déconnexion réussie.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User successfully logged out
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '500':
+          description: Erreur interne du serveur.
+
+components:
+  schemas:
+    Otp:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        userId:
+          type: integer
+          example: 42
+        type:
+          type: string
+          enum: [PASSWORD_RESET, PHONE_CHANGE]
+          example: PHONE_CHANGE
+        newValue:
+          type: string
+          example: "+237612345678"
+        otpHash:
+          type: string
+          example: "$2b$10$hashedOtpValue"
+        expiresAt:
+          type: string
+          format: date-time
+          example: "2025-05-04T12:34:56Z"
+        attempts:
+          type: integer
+          example: 0
+        isVerified:
+          type: boolean
+          example: false
+        verifiedAt:
+          type: string
+          format: date-time
+          example: "2025-05-04T13:00:00Z"
+        ip:
+          type: string
+          example: "192.168.1.1"
 
 securitySchemes:
   cookieAuth:
     type: apiKey
     in: cookie
-    name: connect.sid
+    name: session

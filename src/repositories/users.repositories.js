@@ -17,7 +17,14 @@ async function getAllUsers() {
     return users;
 }
 
+async function getUserDetails(id) {
+    // Aggreger toutes les données nécessaire au profil privé
+    const user = await User.findByPk(id);
+    return user;
+}
+
 async function getUserById(id) {
+    // Limiter les champs pour le profil publique
     const user = await User.findByPk(id);
     return user;
 }
@@ -47,6 +54,7 @@ module.exports = {
     getUserByEmail,
     createUser,
     getAllUsers,
+    getUserDetails,
     getUserById,
     updateUser,
     deleteUser,
