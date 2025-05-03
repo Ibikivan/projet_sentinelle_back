@@ -21,10 +21,10 @@ const City = sequelize.define('City', {
     country: {
         type: DataTypes.STRING,
         allowNull: false,
-        // validate: {
-        //     is: /^[A-Z]{2}$/, // 2-letter uppercase country code for later use
-        // },
-    },
+        validate: {
+            is: /^[A-Z]{2}$/,
+        }
+    }
 }, {
     tableName: 'cities',
     timestamps: true,

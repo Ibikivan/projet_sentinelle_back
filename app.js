@@ -16,7 +16,10 @@ syncDB()
 const app = express();
 
 app.use(cors({
-    origin: process.env.FRONTEND_ENDPOINT,
+    origin: [
+        process.env.FRONTEND_ENDPOINT,
+        process.env.BACKEND_ENDPOINT
+    ],
     credentials: true,
 }));
 
@@ -24,7 +27,7 @@ app.use(express.json());
 
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(specs, null, {
     swaggerOptions: {
-        withCredentials: true,
+        withCredentials: true
     }
 }));
 

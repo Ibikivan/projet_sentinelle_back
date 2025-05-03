@@ -78,45 +78,13 @@ paths:
         '500':
           description: Erreur interne du serveur.
 
-  /users/{id}:
-    get:
-      summary: Récupérer un utilisateur par ID
-      description: Retourne les détails d'un utilisateur spécifique en fonction de son ID.
-      tags:
-        - Users
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: ID de l'utilisateur.
-      responses:
-        '200':
-          description: Utilisateur récupéré avec succès.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '404':
-          description: Utilisateur non trouvé.
-        '500':
-          description: Erreur interne du serveur.
-
     put:
-      summary: Mettre à jour un utilisateur
-      description: Met à jour les informations d'un utilisateur existant.
+      summary: Mettre à jour le profil de l'utilisateur connecté
+      description: Met à jour les informations de l'utilisateur actuellement connecté.
       tags:
         - Users
       security:
         - cookieAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: ID de l'utilisateur.
       requestBody:
         required: true
         content:
@@ -124,9 +92,6 @@ paths:
             schema:
               type: object
               properties:
-                phoneNumber:
-                  type: string
-                  example: "+237612345678"
                 email:
                   type: string
                   example: "user@example.com"
@@ -144,7 +109,7 @@ paths:
                   example: 1
       responses:
         '200':
-          description: Utilisateur mis à jour avec succès.
+          description: Profil mis à jour avec succès.
           content:
             application/json:
               schema:
@@ -163,8 +128,142 @@ paths:
           description: Erreur interne du serveur.
 
     delete:
-      summary: Supprimer un utilisateur
-      description: Supprime un utilisateur existant en fonction de son ID.
+      summary: Supprimer le profil de l'utilisateur connecté
+      description: Supprime le compte de l'utilisateur actuellement connecté.
+      tags:
+        - Users
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Profil supprimé avec succès.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Profile deleted successfully
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '500':
+          description: Erreur interne du serveur.
+
+  /users/details:
+    get:
+      summary: Récupérer les détails du profil de l'utilisateur connecté
+      description: Retourne les informations détaillées de l'utilisateur actuellement connecté.
+      tags:
+        - Users
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Détails du profil récupérés avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '500':
+          description: Erreur interne du serveur.
+
+  /users/{id}:
+    get:
+      summary: Récupérer un utilisateur par ID
+      description: Retourne les informations publiques d'un utilisateur spécifique en fonction de son ID.
+      tags:
+        - Users
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de l'utilisateur.
+      responses:
+        '200':
+          description: Utilisateur récupéré avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '404':
+          description: Utilisateur non trouvé.
+        '500':
+          description: Erreur interne du serveur.
+
+    put:
+      summary: Mise à jour d'un utilisateur par un administrateur
+      description: Permet à un administrateur de mettre à jour les informations d'un utilisateur spécifique.
+      tags:
+        - Users
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de l'utilisateur.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role:
+                  type: string
+                  enum: [USER, ADMIN, SUPER_ADMIN]
+                  example: ADMIN
+                email:
+                  type: string
+                  example: "admin@example.com"
+                firstName:
+                  type: string
+                  example: "Admin"
+                lastName:
+                  type: string
+                  example: "User"
+                profilePicture:
+                  type: string
+                  example: "https://example.com/admin.jpg"
+                cityId:
+                  type: integer
+                  example: 1
+      responses:
+        '200':
+          description: Utilisateur mis à jour avec succès.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User updated successfully
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '403':
+          description: Accès refusé. L'utilisateur doit être un administrateur.
+        '404':
+          description: Utilisateur non trouvé.
+        '500':
+          description: Erreur interne du serveur.
+
+    delete:
+      summary: Suppression d'un utilisateur par un administrateur
+      description: Permet à un administrateur de supprimer un utilisateur spécifique.
       tags:
         - Users
       security:
@@ -222,17 +321,22 @@ components:
         cityId:
           type: integer
           example: 1
-        isVerified:
-          type: boolean
-          example: false
+        role:
+          type: string
+          enum: [USER, ADMIN, SUPER_ADMIN]
+          example: USER
+        tokenRevokedBefore:
+          type: string
+          format: date-time
+          example: "2025-05-04T12:34:56Z"
         createdAt:
           type: string
           format: date-time
-          example: 2025-04-28T12:34:56Z
+          example: "2025-05-04T12:34:56Z"
         updatedAt:
           type: string
           format: date-time
-          example: 2025-04-28T12:34:56Z
+          example: "2025-05-04T12:34:56Z"
 
 securitySchemes:
   cookieAuth:

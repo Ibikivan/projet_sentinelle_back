@@ -2,7 +2,7 @@ paths:
   /cities:
     post:
       summary: Créer une nouvelle ville
-      description: Ajoute une nouvelle ville à la base de données.
+      description: Ajoute une nouvelle ville à la base de données. Les noms de villes doivent être uniques et respecter les contraintes de validation.
       tags:
         - Cities
       requestBody:
@@ -40,6 +40,8 @@ paths:
                     $ref: '#/components/schemas/City'
         '400':
           description: Erreur de validation ou ville déjà existante.
+        '409':
+          description: Conflit. Une ville avec le même code existe déjà.
         '500':
           description: Erreur interne du serveur.
 
@@ -87,7 +89,7 @@ paths:
 
     put:
       summary: Mettre à jour une ville
-      description: Met à jour les informations d'une ville existante.
+      description: Met à jour les informations d'une ville existante. Les champs modifiés doivent respecter les contraintes de validation.
       tags:
         - Cities
       parameters:
@@ -128,6 +130,8 @@ paths:
                     $ref: '#/components/schemas/City'
         '404':
           description: Ville non trouvée.
+        '400':
+          description: Erreur de validation.
         '500':
           description: Erreur interne du serveur.
 
@@ -179,8 +183,14 @@ components:
         createdAt:
           type: string
           format: date-time
-          example: 2025-04-28T12:34:56Z
+          example: 2025-05-04T12:34:56Z
         updatedAt:
           type: string
           format: date-time
-          example: 2025-04-28T12:34:56Z
+          example: 2025-05-04T12:34:56Z
+
+securitySchemes:
+  cookieAuth:
+    type: apiKey
+    in: cookie
+    name: session

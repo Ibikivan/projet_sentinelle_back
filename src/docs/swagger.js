@@ -6,9 +6,9 @@ const options = {
   definition: {
     openapi: '3.0.0',
     info: {
-        title: 'Sentinelle Project API',
-        version: '1.0.0',
-        description: 'API documentation for Sentille Prayer Project',
+      title: 'Sentinelle Project API',
+      version: '1.0.0',
+      description: 'API documentation for Sentille Prayer Project',
     },
     servers: [{ url: `${process.env.BACKEND_ENDPOINT}/api` }],
     components: {

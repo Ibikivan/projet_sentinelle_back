@@ -20,6 +20,26 @@ async function getAllUsers(req, res, next) {
     }
 }
 
+async function getUserDetails(req, res, next) {
+    try {
+        const user = await usersServices.getUserDetails(req.user.id);
+        res.status(200).json(user);
+    } catch (error) {
+        console.error('Error fetching user:', error);
+        next(error);
+    }
+}
+
+async function deleteProfile(req, res, next) {
+    try {
+        const user = await usersServices.deleteUser(req.user.id);
+        res.status(200).json({message: 'Profile deleted successfully', user});
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        next(error);
+    }
+}
+
 async function getUserById(req, res, next) {
     try {
         const user = await usersServices.getUserById(req.params.id);
@@ -32,7 +52,17 @@ async function getUserById(req, res, next) {
 
 async function updateUser(req, res, next) {
     try {
-        const user = await usersServices.updateUser(req.params.id, req.body);
+        const user = await usersServices.updateUser(req.user.id, req.body);
+        res.status(200).json({message: 'User updated successfully', user});
+    } catch (error) {
+        console.error('Error updating user:', error);
+        next(error);
+    }
+}
+
+async function adminUpdateUser(req, res, next) {
+    try {
+        const user = await usersServices.adminUpdateUser(req.params.id, req.body);
         res.status(200).json({message: 'User updated successfully', user});
     } catch (error) {
         console.error('Error updating user:', error);
@@ -53,7 +83,10 @@ async function deleteUser(req, res, next) {
 module.exports = {
     registerUser,
     getAllUsers,
+    getUserDetails,
+    deleteProfile,
     getUserById,
     updateUser,
+    adminUpdateUser,
     deleteUser,
 };
