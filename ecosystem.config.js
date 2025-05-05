@@ -5,10 +5,9 @@ module.exports = {
     exec_mode: "fork",
     autorestart: true,
     env: {
-      NODE_ENV: "production",
+      NODE_ENV: "developpement",
       PORT: 3000,
       // DB_HOST: "${{ secrets.DB_HOST }}",  // À remplacer par vos variables
     },
   }]
 };
-  
