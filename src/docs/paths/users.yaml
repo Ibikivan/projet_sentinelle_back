@@ -295,6 +295,92 @@ paths:
         '500':
           description: Erreur interne du serveur.
 
+  /users/request-restauration:
+    post:
+      summary: Demande de restauration de compte
+      description: Permet à un utilisateur de demander un OTP pour restaurer un compte supprimé.
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newPhoneNumber:
+                  type: string
+                  example: "+237612345678"
+              required:
+                - newPhoneNumber
+      responses:
+        '200':
+          description: OTP envoyé avec succès.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: OTP sent successfully
+                  otp:
+                    $ref: '#/components/schemas/Otp'
+        '400':
+          description: Numéro de téléphone requis ou invalide.
+        '404':
+          description: Utilisateur non trouvé.
+        '410':
+          description: Compte non supprimé.
+        '500':
+          description: Erreur interne du serveur.
+
+  /users/verify-restauration:
+    post:
+      summary: Vérification du code OTP pour la restauration de compte
+      description: Permet à un utilisateur de vérifier un OTP pour restaurer un compte supprimé.
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phoneNumber:
+                  type: string
+                  example: "+237612345678"
+                otpCode:
+                  type: string
+                  example: "123456"
+              required:
+                - phoneNumber
+                - otpCode
+      responses:
+        '200':
+          description: Compte restauré avec succès.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Account restored successfully
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Format OTP invalide.
+        '404':
+          description: OTP ou utilisateur non trouvé.
+        '410':
+          description: OTP expiré.
+        '429':
+          description: Tentatives maximales dépassées.
+        '500':
+          description: Erreur interne du serveur.
+
 components:
   schemas:
     User:
