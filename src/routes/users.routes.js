@@ -9,8 +9,8 @@ router.get('/', authenticate, usersController.getAllUsers);
 router.put('/', authenticate, usersController.updateUser);
 router.get('/details', authenticate, usersController.getUserDetails);
 /** Routes à doucumenter *************************************/
-router.post('/request-restauration', authenticate, usersController.requestToRestaureUser);
-router.post('/verify-restauration', authenticate, usersController.verifyRestaurationOtp);
+router.post('/request-restauration', usersController.requestToRestaureUser);
+router.post('/verify-restauration', usersController.verifyRestaurationOtp);
 /*********************************************************** */
 router.delete('/', authenticate, usersController.deleteProfile);
 router.get('/:id', authenticate, usersController.getUserById); // Obtenir le profil public d'un utilisateur
