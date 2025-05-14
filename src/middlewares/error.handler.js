@@ -8,5 +8,5 @@ module.exports = (err, req, res, next) => {
     console.error(err);
     res
         .status(500)
-        .json({ code: 'SERVER_ERROR', message: 'Une erreur inattendue est survenue' });
+        .json({ code: 'SERVER_ERROR', message: err?.message, details: err?.details });
 };

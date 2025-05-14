@@ -43,9 +43,19 @@ async function deleteUser(id, transaction=null) {
     return deleted;
 }
 
-async function getUserByPhoneNumber(phoneNumber) {
+async function restaureUser(id, transaction=null) {
+    const [user] = await User.update(
+        { deletedAt: null },
+        { where: { id } },
+        { transaction }
+    );
+    return user;
+}
+
+async function getUserByPhoneNumber(phoneNumber, paranoid=true) {
     const user = await User.findOne({
-        where: { phoneNumber: phoneNumber }
+        where: { phoneNumber: phoneNumber },
+        paranoid
     });
     return user;
 }
@@ -58,5 +68,6 @@ module.exports = {
     getUserById,
     updateUser,
     deleteUser,
+    restaureUser,
     getUserByPhoneNumber
 }

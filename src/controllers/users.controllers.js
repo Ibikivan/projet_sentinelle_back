@@ -80,6 +80,32 @@ async function deleteUser(req, res, next) {
     }
 }
 
+async function requestToRestaureUser(req, res, next) {
+    try {
+        const { newPhoneNumber } = req.body;
+        if (!newPhoneNumber) return res.status(400).json({ message: 'New phone number is required' });
+
+        const otp = await usersServices.requestToRestaureAccount(newPhoneNumber, req.ip);
+        res.status(200).json({message: 'OTP sent successfully', otp});
+    } catch (error) {
+        console.error('Error during OTP request:', error);
+        next(error);
+    }
+}
+
+async function verifyRestaurationOtp(req, res, next) {
+    try {
+        const { phoneNumber, otpCode } = req.body;
+        if (!phoneNumber || !otpCode) res.status(400).json({ message: "Requester's phone number and otp code are required" });
+
+        const user = await usersServices.validateAccountRestauration(phoneNumber, otpCode);
+        res.status(200).json({message: 'Account restaured successfully', user});
+    } catch (error) {
+        console.error('Error during verification or restauration:', error);
+        next(error);
+    }
+}
+
 module.exports = {
     registerUser,
     getAllUsers,
@@ -89,4 +115,6 @@ module.exports = {
     updateUser,
     adminUpdateUser,
     deleteUser,
+    requestToRestaureUser,
+    verifyRestaurationOtp
 };

@@ -19,7 +19,7 @@ const Otp = sequelize.define('Otp', {
         },
     },
     type: {
-        type: DataTypes.ENUM('PASSWORD_RESET', 'PHONE_CHANGE'),
+        type: DataTypes.ENUM('PASSWORD_RESET', 'PHONE_CHANGE', 'RESTAURE_ACCOUNT'),
         allowNull: false,
     },
     newValue: {

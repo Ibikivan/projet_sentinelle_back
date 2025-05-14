@@ -329,7 +329,7 @@ components:
           example: 42
         type:
           type: string
-          enum: [PASSWORD_RESET, PHONE_CHANGE]
+          enum: [PASSWORD_RESET, PHONE_CHANGE, RESTAURE_ACCOUNT]
           example: PHONE_CHANGE
         newValue:
           type: string
