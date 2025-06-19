@@ -1,6 +1,5 @@
 const authServices = require('../services/auth.services');
 const dotenv = require('dotenv');
-const { ValidationError } = require('../utils/errors.classes');
 dotenv.config();
 
 
@@ -54,6 +53,13 @@ async function verifyOtp(req, res, next) {
         const { otpCode } = req.body;
         if (!otpCode) return res.status(400).json({ message: 'OTP code is required' });
         const otp = await authServices.verifyPhoneNumberOtp(req.user.id, otpCode);
+
+        res.clearCookie('session', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/api'
+        });
         res.status(200).json({ message: 'Phone number updated', otp });
     } catch (error) {
         next(error);
@@ -108,6 +114,13 @@ async function resetPassword(req, res, next) {
         if (!otpId || !newPassword) res.status(400).json({ message: "Requester's phone number and otp id are requierd" });
 
         const user = await authServices.resetPassword(otpId, newPassword);
+
+        res.clearCookie('session', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/api'
+        });
         res.status(200).json({ message: "Password reseted seccessfully", user });
     } catch (error) {
         next(error)

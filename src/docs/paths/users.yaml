@@ -308,11 +308,11 @@ paths:
             schema:
               type: object
               properties:
-                newPhoneNumber:
+                phoneNumber:
                   type: string
                   example: "+237612345678"
               required:
-                - newPhoneNumber
+                - phoneNumber
       responses:
         '200':
           description: OTP envoyé avec succès.

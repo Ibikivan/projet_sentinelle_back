@@ -5,6 +5,7 @@ const { formatUserPhoneNumber, generateResetCode, formatPhoneNumber } = require(
 const bcrypt = require('bcrypt');
 const { ValidationError, NotFoundError, ConflictError, GoneError, TooManyRequestsError, AuthentificationError } = require('../utils/errors.classes');
 const { sendEmailOTP } = require('../utils/email.services');
+const { sendSMSOTP } = require('../utils/sms.services');
 
 async function createUser(user) {
     return await sequelize.transaction(async (transaction) => {
@@ -12,7 +13,7 @@ async function createUser(user) {
         
         formatUserPhoneNumber(user);
         const isUserExist = await usersRepositories.getUserByPhoneNumber(user.phoneNumber, false);
-        if (isUserExist.deletedAt) throw new GoneError(`Deleted account exit for the number ${user.phoneNumber}`);        
+        if (isUserExist?.deletedAt) throw new GoneError(`${user.phoneNumber}`);        
 
         user.password = await bcrypt.hash(user.password, 10);
         return usersRepositories.createUser(user, transaction)
@@ -80,6 +81,10 @@ async function deleteUser(id) {
     return await sequelize.transaction(async (transaction) => {
         const userExist = await usersRepositories.getUserById(id);
         if (!userExist) throw new NotFoundError(`User with ID ${id} not found`);
+
+        const newUser = { tokenRevokedBefore: new Date() };
+        await usersRepositories.updateUser(userExist.id, newUser, transaction);
+
         const deleted = await usersRepositories.deleteUser(id, transaction);
         return deleted;
     });
@@ -87,7 +92,8 @@ async function deleteUser(id) {
 
 async function requestToRestaureAccount(phoneNumber, ipAdress) {
     return await sequelize.transaction(async (transaction) => {
-        const user = await usersRepositories.getUserByPhoneNumber(phoneNumber, false);
+        const cleanPhoneNumber = formatPhoneNumber(phoneNumber);
+        const user = await usersRepositories.getUserByPhoneNumber(cleanPhoneNumber, false);
         if (!user) throw new NotFoundError(`User with phone number ${phoneNumber} not found`);
         if (!user.deletedAt) throw new GoneError(`Account is not deleted`);
 
@@ -110,7 +116,7 @@ async function requestToRestaureAccount(phoneNumber, ipAdress) {
             });
 
         // envoie le otp par sms et email
-        // await sendSMSOTP(parseInt(cleanPhoneNumber), otpCode); // penser à enlever le + de +237 pour que sa marche
+        // await sendSMSOTP(cleanPhoneNumber, otpCode); // penser à enlever le + de +237 pour que sa marche
         await sendEmailOTP(user.email, otpCode, 'Votre code OTP pour la restauration de votre compte');
 
         return { id: otp.id, expiresAt: otp.expiresAt };
@@ -124,8 +130,9 @@ async function validateAccountRestauration(phoneNumber, otpCode) {
             throw new ValidationError('Invalid OTP format');
         };
 
-        const user = await usersRepositories.getUserByPhoneNumber(formatPhoneNumber(phoneNumber));
-        if (!user) throw new NotFoundError(`User with phone ${cleanPhone} not found`);
+        const cleanPhoneNumber = formatPhoneNumber(phoneNumber);
+        const user = await usersRepositories.getUserByPhoneNumber(cleanPhoneNumber, false);
+        if (!user) throw new NotFoundError(`User with phone ${cleanPhoneNumber} not found`);
 
         const otp = await authRepositories.getOtpByUserIdAndType(
             user.id, 'RESTAURE_ACCOUNT',
@@ -146,7 +153,7 @@ async function validateAccountRestauration(phoneNumber, otpCode) {
         await authRepositories.consumeOtp(otp.id, transaction);
 
         // Resature account
-        const restauredUser = await usersRepositories.restaureUser(user.id, transaction);
+        const restauredUser = await usersRepositories.restoreUser(user.id, transaction);
 
         return restauredUser;
     });
