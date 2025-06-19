@@ -26,7 +26,9 @@ function formatUserPhoneNumber(user) {
     s = hasPlus ? s.slice(1) : s;
   
     // 3) Ne garder que les chiffres (après avoir retiré '+')
-    const digits = defaultIndex + s.replace(/\D+/g, '');
+    const digits = s.startsWith(defaultIndex)
+        ? s.replace(/\D+/g, '')
+        : defaultIndex + s.replace(/\D+/g, '');
   
     // 4) Construire la chaîne finale selon le mode
     let formatted;
@@ -83,7 +85,9 @@ function formatPhoneNumber(input) {
     s = hasPlus ? s.slice(1) : s;
   
     // 3) Ne garder que les chiffres (après avoir retiré '+')
-    const digits = defaultIndex + s.replace(/\D+/g, '');
+    const digits = s.startsWith(defaultIndex)
+        ? s.replace(/\D+/g, '')
+        : defaultIndex + s.replace(/\D+/g, '');
   
     // 4) Construire la chaîne finale selon le mode
     let formatted;
@@ -109,6 +113,8 @@ function formatPhoneNumber(input) {
     if (!re.test(formatted)) {
         throw new ValidationError(`Invalid E.164 phone number: "${formatted}"`);
     }
+
+    console.log("Formatted phone number:", formatted);
   
     return formatted;
 };

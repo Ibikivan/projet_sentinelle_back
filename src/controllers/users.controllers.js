@@ -33,6 +33,12 @@ async function getUserDetails(req, res, next) {
 async function deleteProfile(req, res, next) {
     try {
         const user = await usersServices.deleteUser(req.user.id);
+        res.clearCookie('session', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/api'
+        });
         res.status(200).json({message: 'Profile deleted successfully', user});
     } catch (error) {
         console.error('Error deleting user:', error);
@@ -73,6 +79,12 @@ async function adminUpdateUser(req, res, next) {
 async function deleteUser(req, res, next) {
     try {
         const user = await usersServices.deleteUser(req.params.id);
+        res.clearCookie('session', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/api'
+        });
         res.status(200).json({message: 'User deleted successfully', user});
     } catch (error) {
         console.error('Error deleting user:', error);
@@ -80,12 +92,12 @@ async function deleteUser(req, res, next) {
     }
 }
 
-async function requestToRestaureUser(req, res, next) {
+async function requestToRestoreUser(req, res, next) {
     try {
-        const { newPhoneNumber } = req.body;
-        if (!newPhoneNumber) return res.status(400).json({ message: 'New phone number is required' });
+        const { phoneNumber } = req.body;
+        if (!phoneNumber) return res.status(400).json({ message: 'New phone number is required' });
 
-        const otp = await usersServices.requestToRestaureAccount(newPhoneNumber, req.ip);
+        const otp = await usersServices.requestToRestaureAccount(phoneNumber, req.ip);
         res.status(200).json({message: 'OTP sent successfully', otp});
     } catch (error) {
         console.error('Error during OTP request:', error);
@@ -115,6 +127,6 @@ module.exports = {
     updateUser,
     adminUpdateUser,
     deleteUser,
-    requestToRestaureUser,
+    requestToRestoreUser,
     verifyRestaurationOtp
 };

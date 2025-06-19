@@ -14,10 +14,11 @@ const client = new twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUT
  * @throws {Error} If the Twilio client fails to send the SMS.
  */
 const sendSMSOTP = async (to, otp) => {
+  console.log("OTP SMS Number", to)
   return client.messages.create({
     body: `Votre code OTP est : ${otp}`,
     from: process.env.TWILIO_PHONE_NUMBER,
-    to: to,
+    to: `+${to}`,
   });
 };
 

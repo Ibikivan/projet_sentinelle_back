@@ -80,7 +80,7 @@ async function requestToChangePhoneNumber(userId, newPhoneNumber, ipAdress) {
         const otp = await authRepositories.createOtp(otpData, transaction);
         
         // envoie le otp par sms et email
-        // await sendSMSOTP(parseInt(cleanPhoneNumber), otpCode); // penser à enlever le + de +237 pour que sa marche
+        // await sendSMSOTP(cleanPhoneNumber, otpCode); // penser à enlever le + de +237 pour que sa marche
         await sendEmailOTP(user.email, otpCode, 'Votre code OTP pour la modification du numéro de téléphone');
 
         return { id: otp.id, expiresAt: otp.expiresAt };
@@ -117,7 +117,7 @@ async function verifyPhoneNumberOtp(userId, otpCode) {
         };
 
         // Update the user's phone number
-        const newUser = { phoneNumber: otp.newValue };
+        const newUser = { phoneNumber: otp.newValue, tokenRevokedBefore: new Date() };
         await usersRepositories.updateUser(userId, newUser, transaction);
 
         // Mark the OTP as consumed
@@ -181,7 +181,7 @@ async function requestToResetForgottenPassword(phoneNumber, ipAdress) {
         const otp = await authRepositories.createOtp(otpData, transaction);
 
         // envoie le otp par sms et email
-        // await sendSMSOTP(parseInt(cleanPhoneNumber), otpCode); // penser à enlever le + de +237 pour que sa marche
+        // await sendSMSOTP(cleanPhoneNumber, otpCode); // penser à enlever le + de +237 pour que sa marche
         await sendEmailOTP(user.email, otpCode, 'Votre code OTP pour la modification du numéro de téléphone');
 
         return { id: otp.id, expiresAt: otp.expiresAt };

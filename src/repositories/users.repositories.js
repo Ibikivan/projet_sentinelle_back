@@ -43,12 +43,11 @@ async function deleteUser(id, transaction=null) {
     return deleted;
 }
 
-async function restaureUser(id, transaction=null) {
-    const [user] = await User.update(
-        { deletedAt: null },
+async function restoreUser(id, transaction=null) {
+    const user = await User.restore(
         { where: { id } },
         { transaction }
-    );
+    )
     return user;
 }
 
@@ -68,6 +67,6 @@ module.exports = {
     getUserById,
     updateUser,
     deleteUser,
-    restaureUser,
+    restoreUser,
     getUserByPhoneNumber
 }
