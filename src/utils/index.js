@@ -113,8 +113,6 @@ function formatPhoneNumber(input) {
     if (!re.test(formatted)) {
         throw new ValidationError(`Invalid E.164 phone number: "${formatted}"`);
     }
-
-    console.log("Formatted phone number:", formatted);
   
     return formatted;
 };
