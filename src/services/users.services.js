@@ -6,6 +6,8 @@ const bcrypt = require('bcrypt');
 const { ValidationError, NotFoundError, ConflictError, GoneError, TooManyRequestsError, AuthentificationError } = require('../utils/errors.classes');
 const { sendEmailOTP } = require('../utils/email.services');
 const { sendSMSOTP } = require('../utils/sms.services');
+const { getAllContries, getAllCitiesPaginated } = require('../clients/geonames.client');
+const { getAllCountries } = require('../clients/rescountries.client');
 
 async function createUser(user) {
     return await sequelize.transaction(async (transaction) => {
@@ -30,6 +32,20 @@ async function getAllUsers() {
 };
 
 async function getUserDetails(id) {
+    try {
+        // const conties = await getAllContries();
+        const cities = await getAllCitiesPaginated('p', 1000, 0);
+        // const citiesPhone = await getAllCountries();
+
+        console.log('aggregated data', {
+            // conties,
+            cities: cities.geonames[0],
+            // citiesPhone
+        });
+    } catch (error) {
+        console.error('Error in getUserDetails:', error);
+    }
+
     const user = await usersRepositories.getUserDetails(id);
     return user;
 };
