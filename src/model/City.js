@@ -1,50 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const rowData = {
-    // From geonames get all cities paginated
-    adminCode1: "11",
-    lng: 2.3488, // float
-    geonameId: 2988507,
-    toponymName: 'Paris',
-    countryId: 3017382, // int
-    fcl: "P",
-    population: 2138551,
-    countryCode: "FR",
-    name: 'Paris',
-    fclName: 'city, village,...',
-    ISO3166_2: 'IDF',
-    countryName: 'France',
-    fcodeName: 'capital of a political entity',
-    adminName1: 'Île-de-France',
-    lat: 48.85341, // float
-    fcode: "PPLC",
-
-    // From geonames get all countries
-    continent: "EU",
-    contryCapital: "Paris",
-    languages: "fr",
-    countryId: 3017382,
-    south: 41.303, // float
-    isoAlpha3: "FRA",
-    north: 51.124, // float
-    fipsCode: "FR",
-    countryPopulation: 65273511, // int
-    east: 9.561, // float
-    isoNumeric: 250, // int
-    areaInSqKm: 551695, // float
-    countryCode: "FR",
-    west: -5.142, // float
-    postalCodeFormat: "#####",
-    continentName: "Europe",
-    currencyCode: "EUR",
-
-    // From rescountries get all countries
-    alpha2Code: "FR",
-    callingCodes: "+33", // string
-    region: "Europe"
-};
-
 const City = sequelize.define('City', {
     id: {
         type: DataTypes.INTEGER,
@@ -85,7 +41,7 @@ const City = sequelize.define('City', {
     },
     name: {
         type: DataTypes.STRING,
-        allowNull: true,
+        allowNull: false,
     },
     fclName: {
         type: DataTypes.STRING,
@@ -190,7 +146,18 @@ const City = sequelize.define('City', {
 }, {
     tableName: 'cities',
     timestamps: true,
-    paranoid: true
+    paranoid: true,
+    underscored: true,
+    indexes: [
+        { fields: ['name'] },
+    ],
 });
+
+City.associate = (models) => {
+    City.hasMany(models.User, {
+        foreignKey: 'city_id',
+        as: 'residents',
+    });
+};
 
 module.exports = City;

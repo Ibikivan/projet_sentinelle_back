@@ -1,15 +1,18 @@
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
 const swaggerUi = require('swagger-ui-express');
 const specs = require('./src/docs/swagger');
 const cokieParser = require('cookie-parser');
 const { testDBConnexion, syncDB } = require('./src/model');
-const errorHandler = require('./src/middlewares/error.handler');
+const errorHandler = require('./src/middlewares/error-handler.middleware');
 const citiesRoutes = require('./src/routes/cities.routes');
 const usersRoutes = require('./src/routes/users.routes');
 const authRoutes = require('./src/routes/auth.routes');
+const prayerRoutes = require('./src/routes/prayers.routes');
+const testimonyRoutes = require('./src/routes/testimonies.routes');
+const envVarTest = require('./src/config/env-config');
 
+envVarTest()
 testDBConnexion()
 syncDB()
 
@@ -36,6 +39,8 @@ app.use(cokieParser());
 app.use('/api/cities', citiesRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/subject', prayerRoutes);
+app.use('/api/testimony', testimonyRoutes);
 
 app.use(errorHandler);
 

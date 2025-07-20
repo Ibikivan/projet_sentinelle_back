@@ -4,11 +4,11 @@ const { ConflictError, NotFoundError } = require('../utils/errors.classes');
 
 async function addCity(city) {
     return await sequelize.transaction(async (transaction) => {
-        const isCityExist = await citiesRepositories.getCityByCode(city.code);
+        const isCityExist = await citiesRepositories.getCityByCode(city.fcl); // A remplacer par un identifiant unique de ville
         if (isCityExist) {
             throw new ConflictError('City already exists');
         }
-        const newCity = await citiesRepositories.createCity(city);
+        const newCity = await citiesRepositories.createCity(city, transaction);
         return newCity;
     })
 }

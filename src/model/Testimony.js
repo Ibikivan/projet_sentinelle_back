@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
-const PrayerSubject = require("./PrayerSubject");
+const { ValidationError } = require("../utils/errors.classes");
 
 const Testimony = sequelize.define('Testimony', {
     id: {
@@ -11,31 +11,48 @@ const Testimony = sequelize.define('Testimony', {
     title: {
         type: DataTypes.STRING,
         allowNull: true,
+        validate: { len: [0, 255] },
     },
     content: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: true,
     },
     voiceContent: {
         type: DataTypes.STRING,
         allowNull: true,
+        validate: { isUrl: true }
     },
     attachements: {
         type: DataTypes.ARRAY(DataTypes.STRING),
         allowNull: true,
-    },
-    subjectId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: PrayerSubject,
-            key: 'id',
+        validate: {
+            maxAttachements(value) {
+                if (value && value.length > 5) {
+                    throw new ValidationError('You can only attach up to 5 files to testimony.');
+                };
+            }
         },
     },
 }, {
     tableName: 'testimonies',
     timestamps: true,
     paranoid: true,
+    underscored: true,
+    underscoredAll: true,
+    validate: {
+        contentOrVoice() {
+            if (!this.content && !this.voiceContent) {
+                throw new ValidationError('Either content or voiceContent must be provided.');
+            };
+        }
+    },
 });
+
+Testimony.associate = (models) => {
+    Testimony.hasOne(models.PrayerSubject, {
+        foreignKey: 'testimony_id',
+        as: 'prayerSubject',
+    });
+};
 
 module.exports = Testimony;

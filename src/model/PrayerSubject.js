@@ -1,9 +1,5 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
-const User = require("./User");
-// const Testimony = require("./Testimony");
-const PrayerCrew = require("./PrayerCrew");
-const Community = require("./Community");
 
 const PrayerSubject = sequelize.define('PrayerSubject', {
     id: {
@@ -16,55 +12,62 @@ const PrayerSubject = sequelize.define('PrayerSubject', {
         allowNull: false,
     },
     description: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: true,
     },
     isPublic: {
         type: DataTypes.BOOLEAN,
-        allowNull: true,
+        allowNull: false,
         defaultValue: false,
     },
     state: {
         type: DataTypes.ENUM('active', 'close_exhausted', 'close_expired'),
         allowNull: false,
         defaultValue: 'active',
-    },
-    // testimonyId: {
-    //     type: DataTypes.INTEGER,
-    //     allowNull: true,
-    //     references: {
-    //         model: Testimony,
-    //         key: 'id',
-    //     },
-    // },
-    userId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: User,
-            key: 'id',
-        },
-    },
-    prayerCrewId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        references: {
-            model: PrayerCrew,
-            key: 'id',
-        },
-    },
-    communityId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        references: {
-            model: Community,
-            key: 'id',
-        },
+        validate: { isIn: [['active', 'close_exhausted', 'close_expired']] },
     },
 }, {
     tableName: 'prayer_subjects',
     timestamps: true,
     paranoid: true,
+    underscored: true,
+    indexes: [
+        { fields: ['user_id'] },
+        { fields: ['state'] },
+        { fields: ['is_public'] },
+        { fields: ['testimony_id'] },
+    ],
 });
+
+PrayerSubject.associate = (models) => {
+    PrayerSubject.belongsTo(models.User, {
+        foreignKey: 'user_id',
+        as: 'creator',
+    });
+
+    PrayerSubject.belongsTo(models.Testimony, {
+        foreignKey: 'testimony_id',
+        as: 'testimony',
+    });
+
+    PrayerSubject.belongsToMany(models.PrayerCrew, {
+        through: 'prayer_subject_crew',
+        foreignKey: 'subject_id',
+        otherKey: 'crew_id',
+        as: 'prayerCrews',
+    });
+
+    PrayerSubject.belongsToMany(models.Community, {
+        through: 'subject_community',
+        foreignKey: 'subject_id',
+        otherKey: 'community_id',
+        as: 'communities',
+    });
+
+    PrayerSubject.hasMany(models.Comment, {
+        foreignKey: 'subject_id',
+        as: 'comments',
+    })
+};
 
 module.exports = PrayerSubject;

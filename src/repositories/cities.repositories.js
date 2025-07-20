@@ -1,8 +1,8 @@
 const { City } = require("../model");
 
-async function getCityByCode(code) {
+async function getCityByCode(fcl) {
     const city = await City.findOne({
-        where: { code: code }
+        where: { fcl }
     });
     return city;
 }

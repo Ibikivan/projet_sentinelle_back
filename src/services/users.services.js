@@ -100,13 +100,13 @@ async function requestToRestaureAccount(phoneNumber, ipAdress) {
         const otpCode = generateResetCode();
         const otpData = {
             userId: user.id,
-            type: 'RESTAURE_ACCOUNT',
+            type: 'RESTORE_ACCOUNT',
             otpHash: await bcrypt.hash(otpCode, 10),
             ip: ipAdress,
         }
 
         // invalide les anciens otps pour le même utilisateur
-        await authRepositories.invalidateOtps(user.id, 'RESTAURE_ACCOUNT', transaction);
+        await authRepositories.invalidateOtps(user.id, 'RESTORE_ACCOUNT', transaction);
 
         const otp = await authRepositories.createOtp(otpData, transaction)
             .catch(err => {
@@ -134,7 +134,7 @@ async function validateAccountRestauration(phoneNumber, otpCode) {
         if (!user) throw new NotFoundError(`User with phone ${cleanPhoneNumber} not found`);
 
         const otp = await authRepositories.getOtpByUserIdAndType(
-            user.id, 'RESTAURE_ACCOUNT',
+            user.id, 'RESTORE_ACCOUNT',
             { lock: transaction.LOCK.UPDATE }
         );
 

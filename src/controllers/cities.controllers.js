@@ -1,54 +1,30 @@
+const { asyncHandler } = require('../middlewares/async-handler.middleware');
 const citiesServices = require('../services/cities.services');
 
-async function createCity(req, res, next) {
-    try {
-        const city = await citiesServices.addCity(req.body);
-        res.status(201).json({message: 'City created successfully', city});
-    } catch (error) {
-        console.error('Error creating city:', error);
-        next(error);
-    }
-}
+const createCity = asyncHandler(async (req, res) => {
+    const city = await citiesServices.addCity(req.body);
+    res.status(201).json({message: 'City created successfully', city});
+});
 
-async function getAllCities(req, res, next) {
-    try {
-        const cities = await citiesServices.getAllCities();
-        res.status(200).json(cities);
-    } catch (error) {
-        console.error('Error fetching cities:', error);
-        next(error);
-    }
-}
+const getAllCities = asyncHandler(async (req, res) => {
+    const cities = await citiesServices.getAllCities();
+    res.status(200).json(cities);
+});
 
-async function getCityById(req, res, next) {
-    try {
-        const city = await citiesServices.getCityById(req.params.id);
-        res.status(200).json(city);
-    } catch (error) {
-        console.error('Error fetching city:', error);
-        next(error);
-    }
-}
+const getCityById = asyncHandler(async (req, res) => {
+    const city = await citiesServices.getCityById(req.params.id);
+    res.status(200).json(city);
+});
 
-async function updateCity(req, res, next) {
-    try {
-        const city = await citiesServices.updateCity(req.params.id, req.body);
-        res.status(200).json({message: 'City updated successfully', city});
-    } catch (error) {
-        console.error('Error updating city:', error);
-        next(error);
-    }
-}
+const updateCity = asyncHandler(async (req, res) => {
+    const city = await citiesServices.updateCity(req.params.id, req.body);
+    res.status(200).json({message: 'City updated successfully', city});
+});
 
-async function deleteCity(req, res, next) {
-    try {
-        const city = await citiesServices.deleteCity(req.params.id);
-        res.status(200).json({message: 'City deleted successfully', city});
-    } catch (error) {
-        console.error('Error deleting city:', error);
-        next(error);
-    }
-}
+const deleteCity = asyncHandler(async (req, res) => {
+    const city = await citiesServices.deleteCity(req.params.id);
+    res.status(200).json({message: 'City deleted successfully', city});
+});
 
 module.exports = {
     createCity,
