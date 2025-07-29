@@ -1,3 +1,4 @@
+const envVarTest = require('./src/config/env-config');
 const express = require('express');
 const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
@@ -10,7 +11,7 @@ const usersRoutes = require('./src/routes/users.routes');
 const authRoutes = require('./src/routes/auth.routes');
 const prayerRoutes = require('./src/routes/prayers.routes');
 const testimonyRoutes = require('./src/routes/testimonies.routes');
-const envVarTest = require('./src/config/env-config');
+const commentRoutes = require('./src/routes/comments.routes');
 
 envVarTest()
 testDBConnexion()
@@ -34,6 +35,7 @@ app.use('/api/users', usersRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/subjects', prayerRoutes);
 app.use('/api/testimonies', testimonyRoutes);
+app.use('/api/comments', commentRoutes)
 
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(specs, null, {
     swaggerOptions: { withCredentials: true }

@@ -33,7 +33,7 @@ const requestToChangePhoneNumber = asyncHandler(async (req, res) => {
     if (!newPhoneNumber) return res.status(400).json({ message: 'New phone number is required' });
 
     const otp = await authServices.requestToChangePhoneNumber(req.user.id, newPhoneNumber, req.ip);
-    res.status(200).json({ message: 'OTP sent successfully', otp });
+    res.status(200).json({ message: 'OTP sent', otp });
 });
 
 const verifyOtp = asyncHandler(async (req, res) => {
@@ -69,7 +69,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
     if ( !phoneNumber ) res.status(400).json("Requester's phone number is required");
 
     const otp = await authServices.requestToResetForgottenPassword(phoneNumber, req.ip);
-    res.status(200).json({ message: 'OTP sent successfully', otp });
+    res.status(200).json({ message: 'OTP sent', otp });
 });
 
 const verifyPasswordOtp = asyncHandler(async (req, res) => {
@@ -77,7 +77,7 @@ const verifyPasswordOtp = asyncHandler(async (req, res) => {
     if (!phoneNumber || !otpCode) res.status(400).json({ message: "Requester's phone number and otp code are required" });
 
     const otp = await authServices.verifyPasswordOtp(phoneNumber, otpCode);
-    res.status(200).json({ message: 'Otp verified successfully', otp });
+    res.status(200).json({ message: 'Otp verified', otp });
 });
 
 const resetPassword = asyncHandler(async (req, res) => {
@@ -104,7 +104,7 @@ const logout = asyncHandler(async (req, res) => {
         sameSite: 'lax',
         path: '/api'
     });
-    res.status(200).json({ message: 'User successfully logged out', user });
+    res.status(200).json({ message: 'User logged out', user });
 });
 
 module.exports = {

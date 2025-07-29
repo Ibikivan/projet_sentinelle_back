@@ -1,11 +1,40 @@
 const { asyncHandler } = require("../middlewares/async-handler.middleware");
 const testimoniesServices = require("../services/testimonies.services");
 
-const add = asyncHandler(async (req, res) => {
-    const testimony = await testimoniesServices.add(req.params.prayerId, req.user.id, req.body);
-    res.status(200).json({ message: 'Testimony added successfully', testimony });
+const addTestimony = asyncHandler(async (req, res) => {
+    const testimony = await testimoniesServices.addTestimony(req.params.prayerId, req.user.id, req.body);
+    res.status(201).json({
+        message: 'Testimony added',
+        data: testimony
+    });
+});
+
+const getTestimonyBySubject = asyncHandler(async (req, res) => {
+    const testimonies = await testimoniesServices.getTestimonyBySubject(req.user.id)
+    res.status(200).json({
+        message: 'Testimonies retrived',
+        data: testimonies
+    });
+});
+
+const updateTestimony = asyncHandler(async (req, res) => {
+    const testimony = await testimoniesServices.updateTestimony(req.params.subjectId, req.user.id, req.body);
+    res.status(200).json({
+        message: 'Testimony updated',
+        data: testimony
+    });
+});
+
+const deleteTestimony = asyncHandler(async (req, res) => {
+    await testimoniesServices.deleteTestimony(req.params.subjectId, req.user.id);
+    res.status(204).json({
+        message: 'Testimony deleted'
+    });
 });
 
 module.exports = {
-    add,
+    addTestimony,
+    getTestimonyBySubject,
+    updateTestimony,
+    deleteTestimony,
 };

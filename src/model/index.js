@@ -27,7 +27,7 @@ Object.values(models)
 async function testDBConnexion() {
     try {
         await sequelize.authenticate();
-        console.log('Connection to the database has been established successfully.');
+        console.log('Connection to the database has been established.');
     } catch (error) {
         throw new ServiceUnavailableError('Unable to connect to the database');
     };
@@ -36,7 +36,7 @@ async function testDBConnexion() {
 async function syncDB() {
     try {
         await sequelize.sync({ alter: true });
-        console.log('Database synchronized successfully.');
+        console.log('Database synchronized.');
     } catch (error) {
         throw new ServiceUnavailableError('Unable to synchronize the database');
     };

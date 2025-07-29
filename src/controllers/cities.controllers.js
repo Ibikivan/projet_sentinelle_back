@@ -3,7 +3,7 @@ const citiesServices = require('../services/cities.services');
 
 const createCity = asyncHandler(async (req, res) => {
     const city = await citiesServices.addCity(req.body);
-    res.status(201).json({message: 'City created successfully', city});
+    res.status(201).json({message: 'City created', city});
 });
 
 const getAllCities = asyncHandler(async (req, res) => {
@@ -18,12 +18,12 @@ const getCityById = asyncHandler(async (req, res) => {
 
 const updateCity = asyncHandler(async (req, res) => {
     const city = await citiesServices.updateCity(req.params.id, req.body);
-    res.status(200).json({message: 'City updated successfully', city});
+    res.status(200).json({message: 'City updated', city});
 });
 
 const deleteCity = asyncHandler(async (req, res) => {
     const city = await citiesServices.deleteCity(req.params.id);
-    res.status(200).json({message: 'City deleted successfully', city});
+    res.status(200).json({message: 'City deleted', city});
 });
 
 module.exports = {

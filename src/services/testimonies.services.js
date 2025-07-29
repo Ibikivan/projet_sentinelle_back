@@ -2,8 +2,9 @@ const { sequelize } = require("../model");
 const { ValidationError, NotFoundError } = require("../utils/errors.classes");
 const prayersRepository = require("../repositories/prayers.repositories");
 const testimoniesRepository = require("../repositories/testimonies.repositories");
+const { getUserAndSubject } = require("../utils/fonctions");
 
-async function add(prayerId, userId, data) {
+async function addTestimony(prayerId, userId, data) {
     return await sequelize.transaction(async (transaction) => {
         if (!data.title && !data.content && !data.voiceContent) {
             throw new ValidationError("Either title, content or voiceContent must be provided.");
@@ -28,6 +29,40 @@ async function add(prayerId, userId, data) {
     });
 };
 
+async function getTestimonyBySubject(subjectId, userId) {
+    const { subject } = await getUserAndSubject(subjectId, userId);
+    const testimony = await subject.getTestimony();
+    if (!testimony) throw new NotFoundError("No testimony found for this subject");
+    return testimony;
+};
+
+async function updateTestimony(subjectId, userId, data) {
+    return await sequelize.transaction(async (transaction) => {
+        const { subject } = await getUserAndSubject(subjectId, userId);
+
+        const testimony = await subject.getTestimony();
+        if (!testimony) throw new NotFoundError("Testimony not found");
+        
+        await testimony.update(data, { transaction });
+        return await testimoniesRepository.getTestimonyById(testimony.id);
+    });
+};
+
+async function deleteTestimony(subjectId, userId) {
+    return await sequelize.transaction(async (transaction) => {
+        const { subject } = await getUserAndSubject(subjectId, userId);
+        
+        const testimony = await subject.getTestimony();
+        if (!testimony) throw new NotFoundError("Testimony not found");
+        
+        subject.setTestimony(null, { transaction });
+        await testimony.destroy({ transaction });
+    });
+};
+
 module.exports = {
-    add,
+    addTestimony,
+    getTestimonyBySubject,
+    updateTestimony,
+    deleteTestimony,
 };

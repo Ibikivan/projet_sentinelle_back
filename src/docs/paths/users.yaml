@@ -14,22 +14,22 @@ paths:
               properties:
                 phoneNumber:
                   type: string
-                  example: "+237612345678"
+                  example: '+237612345678'
                 email:
                   type: string
-                  example: "user@example.com"
+                  example: 'user@example.com'
                 password:
                   type: string
-                  example: "Password123!"
+                  example: 'Password123!'
                 firstName:
                   type: string
-                  example: "John"
+                  example: 'John'
                 lastName:
                   type: string
-                  example: "Doe"
+                  example: 'Doe'
                 profilePicture:
                   type: string
-                  example: "https://example.com/profile.jpg"
+                  example: 'https://example.com/profile.jpg'
                 cityId:
                   type: integer
                   example: 1
@@ -49,7 +49,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: User created successfully
+                    example: User created
                   user:
                     $ref: '#/components/schemas/User'
         '400':
@@ -94,16 +94,16 @@ paths:
               properties:
                 email:
                   type: string
-                  example: "user@example.com"
+                  example: 'user@example.com'
                 firstName:
                   type: string
-                  example: "John"
+                  example: 'John'
                 lastName:
                   type: string
-                  example: "Doe"
+                  example: 'Doe'
                 profilePicture:
                   type: string
-                  example: "https://example.com/profile.jpg"
+                  example: 'https://example.com/profile.jpg'
                 cityId:
                   type: integer
                   example: 1
@@ -117,7 +117,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: User updated successfully
+                    example: User updated
                   user:
                     $ref: '#/components/schemas/User'
         '401':
@@ -144,7 +144,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: Profile deleted successfully
+                    example: Profile deleted
         '401':
           description: Non autorisé. L'utilisateur doit être connecté.
         '500':
@@ -226,16 +226,16 @@ paths:
                   example: ADMIN
                 email:
                   type: string
-                  example: "admin@example.com"
+                  example: 'admin@example.com'
                 firstName:
                   type: string
-                  example: "Admin"
+                  example: 'Admin'
                 lastName:
                   type: string
-                  example: "User"
+                  example: 'User'
                 profilePicture:
                   type: string
-                  example: "https://example.com/admin.jpg"
+                  example: 'https://example.com/admin.jpg'
                 cityId:
                   type: integer
                   example: 1
@@ -249,7 +249,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: User updated successfully
+                    example: User updated
                   user:
                     $ref: '#/components/schemas/User'
         '401':
@@ -285,7 +285,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: User deleted successfully
+                    example: User deleted
         '401':
           description: Non autorisé. L'utilisateur doit être connecté.
         '403':
@@ -310,7 +310,7 @@ paths:
               properties:
                 phoneNumber:
                   type: string
-                  example: "+237612345678"
+                  example: '+237612345678'
               required:
                 - phoneNumber
       responses:
@@ -323,7 +323,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: OTP sent successfully
+                    example: OTP sent
                   otp:
                     $ref: '#/components/schemas/Otp'
         '400':
@@ -350,10 +350,10 @@ paths:
               properties:
                 phoneNumber:
                   type: string
-                  example: "+237612345678"
+                  example: '+237612345678'
                 otpCode:
                   type: string
-                  example: "123456"
+                  example: '123456'
               required:
                 - phoneNumber
                 - otpCode
@@ -367,7 +367,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: Account restored successfully
+                    example: Account restored
                   user:
                     $ref: '#/components/schemas/User'
         '400':
@@ -391,19 +391,19 @@ components:
           example: 1
         phoneNumber:
           type: string
-          example: "+237612345678"
+          example: '+237612345678'
         email:
           type: string
-          example: "user@example.com"
+          example: 'user@example.com'
         firstName:
           type: string
-          example: "John"
+          example: 'John'
         lastName:
           type: string
-          example: "Doe"
+          example: 'Doe'
         profilePicture:
           type: string
-          example: "https://example.com/profile.jpg"
+          example: 'https://example.com/profile.jpg'
         cityId:
           type: integer
           example: 1
@@ -414,15 +414,15 @@ components:
         tokenRevokedBefore:
           type: string
           format: date-time
-          example: "2025-05-04T12:34:56Z"
+          example: '2025-05-04T12:34:56Z'
         createdAt:
           type: string
           format: date-time
-          example: "2025-05-04T12:34:56Z"
+          example: '2025-05-04T12:34:56Z'
         updatedAt:
           type: string
           format: date-time
-          example: "2025-05-04T12:34:56Z"
+          example: '2025-05-04T12:34:56Z'
 
 securitySchemes:
   cookieAuth:

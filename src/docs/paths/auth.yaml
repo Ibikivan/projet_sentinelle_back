@@ -72,7 +72,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: OTP sent successfully
+                    example: OTP sent
                   otp:
                     $ref: '#/components/schemas/Otp'
         '400':
@@ -196,7 +196,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: OTP sent successfully
+                    example: OTP sent
                   otp:
                     $ref: '#/components/schemas/Otp'
         '400':
@@ -238,7 +238,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: OTP verified successfully
+                    example: OTP verified
         '400':
           description: Format OTP invalide.
         '404':
@@ -282,7 +282,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: Password reset successfully
+                    example: Password reset
         '400':
           description: Erreur de validation ou mot de passe invalide.
         '404':
@@ -310,7 +310,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: User successfully logged out
+                    example: User logged out
         '401':
           description: Non autorisé. L'utilisateur doit être connecté.
         '500':

@@ -35,7 +35,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: City created successfully
+                    example: City created
                   city:
                     $ref: '#/components/schemas/City'
         '400':
@@ -125,7 +125,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: City updated successfully
+                    example: City updated
                   city:
                     $ref: '#/components/schemas/City'
         '404':
@@ -157,7 +157,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: City deleted successfully
+                    example: City deleted
         '404':
           description: Ville non trouvée.
         '500':
