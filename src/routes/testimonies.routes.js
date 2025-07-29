@@ -1,9 +1,9 @@
 const express = require('express');
-const testimonyController = require('../controllers/testimonies.controllers');
+const testimoniesController = require('../controllers/testimonies.controllers');
 const { authenticate } = require('../middlewares/auth.middleware');
 
 const router = express.Router();
 
-router.post('/', authenticate, testimonyController.add);
+router.post('/:prayerId', authenticate, testimoniesController.add);
 
 module.exports = router;

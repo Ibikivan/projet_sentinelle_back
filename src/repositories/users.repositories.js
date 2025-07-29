@@ -31,23 +31,25 @@ async function getUserById(id) {
 
 async function updateUser(id, user, transaction=null) {
     const [updated] = await User.update(user, {
-        where: { id: id }
-    }, { transaction });
+        where: { id: id },
+        transaction
+    });
     return updated;
 }
 
 async function deleteUser(id, transaction=null) {
     const deleted = await User.destroy({
-        where: { id: id }
-    }, { transaction });
+        where: { id: id },
+        transaction
+    });
     return deleted;
 }
 
 async function restoreUser(id, transaction=null) {
     const user = await User.restore(
-        { where: { id } },
-        { transaction }
-    )
+        { where: { id },
+        transaction
+    });
     return user;
 }
 

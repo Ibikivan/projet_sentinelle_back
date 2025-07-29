@@ -27,21 +27,19 @@ app.use(cors({
 }));
 
 app.use(express.json());
-
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(specs, null, {
-    swaggerOptions: {
-        withCredentials: true
-    }
-}));
-
 app.use(cokieParser());
 
 app.use('/api/cities', citiesRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/subject', prayerRoutes);
-app.use('/api/testimony', testimonyRoutes);
+app.use('/api/subjects', prayerRoutes);
+app.use('/api/testimonies', testimonyRoutes);
 
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(specs, null, {
+    swaggerOptions: { withCredentials: true }
+}));
+
+app.use((req, res) => res.status(404).json({ code: 'NOT_FOUND', message: 'Route inconnue' }));
 app.use(errorHandler);
 
 module.exports = app;

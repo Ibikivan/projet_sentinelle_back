@@ -41,31 +41,31 @@ const PrayerSubject = sequelize.define('PrayerSubject', {
 
 PrayerSubject.associate = (models) => {
     PrayerSubject.belongsTo(models.User, {
-        foreignKey: 'user_id',
+        foreignKey: 'userId',
         as: 'creator',
     });
 
     PrayerSubject.belongsTo(models.Testimony, {
-        foreignKey: 'testimony_id',
+        foreignKey: 'testimonyId',
         as: 'testimony',
     });
 
     PrayerSubject.belongsToMany(models.PrayerCrew, {
         through: 'prayer_subject_crew',
-        foreignKey: 'subject_id',
-        otherKey: 'crew_id',
+        foreignKey: 'subjectId',
+        otherKey: 'crewId',
         as: 'prayerCrews',
     });
 
     PrayerSubject.belongsToMany(models.Community, {
         through: 'subject_community',
-        foreignKey: 'subject_id',
-        otherKey: 'community_id',
+        foreignKey: 'subjectId',
+        otherKey: 'communityId',
         as: 'communities',
     });
 
     PrayerSubject.hasMany(models.Comment, {
-        foreignKey: 'subject_id',
+        foreignKey: 'subjectId',
         as: 'comments',
     })
 };

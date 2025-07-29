@@ -50,12 +50,12 @@ const Comment = sequelize.define('Comment', {
 
 Comment.associate = (models) => {
     Comment.belongsTo(models.User, {
-        foreignKey: 'user_id',
+        foreignKey: 'userId',
         as: 'creator',
     });
 
     Comment.belongsTo(models.PrayerSubject, {
-        foreignKey: 'subject_id',
+        foreignKey: 'subjectId',
         as: 'subject',
     });
 };

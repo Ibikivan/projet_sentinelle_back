@@ -24,15 +24,17 @@ async function getCityById(id) {
 
 async function updateCity(id, city, transaction=null) {
     const [updated] = await City.update(city, {
-        where: { id: id }
-    }, { transaction });
+        where: { id },
+        transaction
+    });
     return updated;
 }
 
 async function deleteCity(id, transaction=null) {
     const deleted = await City.destroy({
-        where: { id: id }
-    }, { transaction });
+        where: { id },
+        transaction
+    });
     return deleted;
 }
 

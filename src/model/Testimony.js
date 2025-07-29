@@ -41,8 +41,8 @@ const Testimony = sequelize.define('Testimony', {
     underscoredAll: true,
     validate: {
         contentOrVoice() {
-            if (!this.content && !this.voiceContent) {
-                throw new ValidationError('Either content or voiceContent must be provided.');
+            if (this.title && !this.content && !this.voiceContent) {
+                throw new ValidationError('Either title, content or voiceContent must be provided.');
             };
         }
     },
@@ -50,7 +50,7 @@ const Testimony = sequelize.define('Testimony', {
 
 Testimony.associate = (models) => {
     Testimony.hasOne(models.PrayerSubject, {
-        foreignKey: 'testimony_id',
+        foreignKey: 'testimonyId',
         as: 'prayerSubject',
     });
 };

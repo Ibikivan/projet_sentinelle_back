@@ -31,19 +31,19 @@ const PrayerCrew = sequelize.define('PrayerCrew', {
 
 PrayerCrew.associate = (models) => {
     PrayerCrew.belongsTo(models.User, {
-        foreignKey: 'user_id',
+        foreignKey: 'userId',
         as: 'creator',
     });
 
     PrayerCrew.belongsTo(models.Community, {
-        foreignKey: 'community_id',
+        foreignKey: 'communityId',
         as: 'community',
     });
 
     PrayerCrew.belongsToMany(models.PrayerSubject, {
         through: 'prayer_subject_crew',
-        foreignKey: 'crew_id',
-        otherKey: 'subject_id',
+        foreignKey: 'crewId',
+        otherKey: 'subjectId',
         as: 'prayerSubjects',
     });
 };

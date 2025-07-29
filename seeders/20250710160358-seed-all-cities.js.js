@@ -16,21 +16,21 @@ module.exports = {
       geoCountries.forEach(c => {
         geoMap[c.countryCode] = {
           continent: c.continent ? c.continent : null,
-          contryCapital: c.capital ? c.capital : null,
+          contry_capital: c.capital ? c.capital : null,
           languages: c.languages ? c.languages : null,
           // countryId: c.geonameId ? c.geonameId : null,
           south: c.south ? parseFloat(c.south) : null,
-          isoAlpha3: c.isoAlpha3 ? c.isoAlpha3 : null,
+          iso_alpha3: c.isoAlpha3 ? c.isoAlpha3 : null,
           north: c.north ? parseFloat(c.north) : null,
-          fipsCode: c.fipsCode ? c.fipsCode : null,
-          countryPopulation: parseInt(c.population, 10) || 0,
+          fips_code: c.fipsCode ? c.fipsCode : null,
+          country_population: parseInt(c.population, 10) || 0,
           east: c.east ? parseFloat(c.east) : null,
-          isoNumeric: parseInt(c.isoNumeric, 10) || null,
-          areaInSqKm: c.areaInSqKm ? parseFloat(c.areaInSqKm) : null,
+          iso_numeric: parseInt(c.isoNumeric, 10) || null,
+          area_in_sq_km: c.areaInSqKm ? parseFloat(c.areaInSqKm) : null,
           west: c.west ? parseFloat(c.west) : null,
-          postalCodeFormat: c.postalCodeFormat ? c.postalCodeFormat : null,
-          continentName: c.continentName ? c.continentName : null,
-          currencyCode: c.currencyCode ? c.currencyCode : null,
+          postal_code_format: c.postalCodeFormat ? c.postalCodeFormat : null,
+          continent_name: c.continentName ? c.continentName : null,
+          currency_code: c.currencyCode ? c.currencyCode : null,
         };
       });
 
@@ -40,7 +40,7 @@ module.exports = {
         // selon la structure de l’API : ici V2 renvoie callingCodes = ["237"]
         const dial = c.callingCodes?.[0] || '';
         resMap[c.alpha2Code] = {
-          callingCodes: `+${dial}`,
+          calling_codes: `+${dial}`,
           region: c.region ? c.region : null
         };
       });
@@ -50,7 +50,7 @@ module.exports = {
       }
 
       // 2) Pagination des villes GeoNames
-      const BATCH = 1000;
+      const BATCH = 500;
       let start = 0;
       const records = [];
 
@@ -70,26 +70,26 @@ module.exports = {
           const phone   = resMap[cc2] || '';
 
           records.push({
-            adminCode1: city.adminCode1 ? city.adminCode1 : null,
+            admin_code1: city.adminCode1 ? city.adminCode1 : null,
             lng: city.lng ? parseFloat(city.lng) : null,
-            geonameId: parseInt(city.geonameId, 10) || null,
-            toponymName: city.toponymName ? city.toponymName : null,
-            countryId: parseInt(city.countryId, 10) || null,
+            geoname_id: parseInt(city.geonameId, 10) || null,
+            toponym_name: city.toponymName ? city.toponymName : null,
+            country_id: parseInt(city.countryId, 10) || null,
             fcl: city.fcl ? city.fcl : null,
             population: city.population ? parseFloat(city.population) : null,
-            countryCode: city.countryCode ? city.countryCode : null,
+            country_code: city.countryCode ? city.countryCode : null,
             name: city.name ? city.name : null,
-            fclName: city.fclName ? city.fclName : null,
-            ISO3166_2: city.ISO3166_2 ? city.ISO3166_2 : null,
-            countryName: city.countryName ? city.countryName : null,
-            fcodeName: city.fcodeName ? city.fcodeName : null,
-            adminName1: city.adminName1 ? city.adminName1 : null,
+            fcl_name: city.fclName ? city.fclName : null,
+            i_s_o3166_2: city.ISO3166_2 ? city.ISO3166_2 : null,
+            country_name: city.countryName ? city.countryName : null,
+            fcode_name: city.fcodeName ? city.fcodeName : null,
+            admin_name1: city.adminName1 ? city.adminName1 : null,
             lat: city.lat ? parseFloat(city.lat) : null,
             fcode: city.fcode ? city.fcode : null,
             ...geoInfo,
             ...phone,
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            created_at: new Date(),
+            updated_at: new Date(),
           });
         });
 

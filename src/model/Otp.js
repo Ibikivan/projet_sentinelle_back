@@ -64,14 +64,14 @@ const Otp = sequelize.define('Otp', {
     paranoid: true,
     underscored: true,
     indexes: [
-        [{ fields: ['user_id'] }],
-        [{ fields: ['expiresAt'] }],
+        { fields: ['user_id'] },
+        { fields: ['expires_at'] },
     ],
 });
 
 Otp.associate = (models) => {
     Otp.belongsTo(models.User, {
-        foreignKey: 'user_id',
+        foreignKey: 'userId',
         as: 'creator',
     });
 };

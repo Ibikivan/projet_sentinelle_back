@@ -29,19 +29,19 @@ const Community = sequelize.define('Community', {
 
 Community.associate = (models) => {
     Community.belongsTo(models.User, {
-        foreignKey: 'user_id',
+        foreignKey: 'userId',
         as: 'creator',
     });
 
     Community.hasMany(models.PrayerCrew, {
-        foreignKey: 'community_id',
+        foreignKey: 'communityId',
         as: 'prayerCrews',
     });
 
     Community.belongsToMany(models.PrayerSubject, {
         through: 'subject_community',
-        foreignKey: 'community_id',
-        otherKey: 'subject_id',
+        foreignKey: 'communityId',
+        otherKey: 'subjectId',
         as: 'prayerSubjects',
     });
 };

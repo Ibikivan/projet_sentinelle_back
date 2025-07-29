@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const createError = require('http-errors'); // pour gérer proprement 401/403
-const usersRepositories = require('../repositories/users.repositories');
+const usersRepository = require('../repositories/users.repositories');
 const { AuthentificationError, AuthorizationError } = require('../utils/errors.classes');
 
 /**
@@ -22,7 +22,7 @@ async function authenticate(req, res, next) {
       throw new AuthentificationError('Invalid token')
     };
 
-    const user = await usersRepositories.getUserById(payload.id);
+    const user = await usersRepository.getUserById(payload.id);
     if (!user) throw new AuthentificationError('Authenticated user not found');
 
     if (user.tokenRevokedBefore && payload.iat * 1000 < user.tokenRevokedBefore.getTime()) {

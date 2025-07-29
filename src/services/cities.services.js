@@ -1,25 +1,25 @@
 const { sequelize } = require('../model');
-const citiesRepositories = require('../repositories/cities.repositories');
+const citiesRepository = require('../repositories/cities.repositories');
 const { ConflictError, NotFoundError } = require('../utils/errors.classes');
 
 async function addCity(city) {
     return await sequelize.transaction(async (transaction) => {
-        const isCityExist = await citiesRepositories.getCityByCode(city.fcl); // A remplacer par un identifiant unique de ville
+        const isCityExist = await citiesRepository.getCityByCode(city.fcl); // A remplacer par un identifiant unique de ville
         if (isCityExist) {
             throw new ConflictError('City already exists');
         }
-        const newCity = await citiesRepositories.createCity(city, transaction);
+        const newCity = await citiesRepository.createCity(city, transaction);
         return newCity;
     })
 }
 
 async function getAllCities() {
-    const cities = await citiesRepositories.getAllCities();
+    const cities = await citiesRepository.getAllCities();
     return cities;
 }
 
 async function getCityById(id) {
-    const city = await citiesRepositories.getCityById(id);
+    const city = await citiesRepository.getCityById(id);
     if (!city) {
         throw new NotFoundError(`City with ID ${id} not found`);
     }
@@ -28,22 +28,22 @@ async function getCityById(id) {
 
 async function updateCity(id, city) {
     return await sequelize.transaction(async (transaction) => {
-        const existingCity = await citiesRepositories.getCityById(id);
+        const existingCity = await citiesRepository.getCityById(id);
         if (!existingCity) {
             throw new NotFoundError(`City with ID ${id} not found`);
         }
-        const updatedCity = await citiesRepositories.updateCity(id, city);
+        const updatedCity = await citiesRepository.updateCity(id, city);
         return updatedCity;
     })
 }
 
 async function deleteCity(id) {
     return await sequelize.transaction(async (transaction) => {
-        const existingCity = await citiesRepositories.getCityById(id);
+        const existingCity = await citiesRepository.getCityById(id);
         if (!existingCity) {
             throw new NotFoundError(`City with ID ${id} not found`);
         }
-        const deletedCity = await citiesRepositories.deleteCity(id);
+        const deletedCity = await citiesRepository.deleteCity(id);
         return deletedCity;
     })
 }

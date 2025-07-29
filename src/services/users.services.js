@@ -1,6 +1,6 @@
 const { sequelize } = require('../model');
-const usersRepositories = require('../repositories/users.repositories');
-const authRepositories = require('../repositories/auth.repositories');
+const usersRepository = require('../repositories/users.repositories');
+const authRepository = require('../repositories/auth.repositories');
 const { formatUserPhoneNumber, generateResetCode, formatPhoneNumber } = require('../utils');
 const bcrypt = require('bcrypt');
 const { ValidationError, NotFoundError, ConflictError, GoneError, TooManyRequestsError, AuthentificationError } = require('../utils/errors.classes');
@@ -11,11 +11,11 @@ async function createUser(user) {
         if (user.password.length < 8) throw new ValidationError('Password must be at least 8 characters');
         
         formatUserPhoneNumber(user);
-        const isUserExist = await usersRepositories.getUserByPhoneNumber(user.phoneNumber, false);
+        const isUserExist = await usersRepository.getUserByPhoneNumber(user.phoneNumber, false);
         if (isUserExist?.deletedAt) throw new GoneError(`${user.phoneNumber}`);        
 
         user.password = await bcrypt.hash(user.password, 10);
-        return usersRepositories.createUser(user, transaction)
+        return usersRepository.createUser(user, transaction)
             .catch(err => {
                 if (err.name === 'SequelizeUniqueConstraintError') throw new ConflictError(err.message);
                 throw err;
@@ -24,24 +24,24 @@ async function createUser(user) {
 };
 
 async function getAllUsers() {
-    const users = await usersRepositories.getAllUsers();
+    const users = await usersRepository.getAllUsers();
     return users;
 };
 
 async function getUserDetails(id) {
-    const user = await usersRepositories.getUserDetails(id);
+    const user = await usersRepository.getUserDetails(id);
     return user;
 };
 
 async function getUserById(id) {
-    const user = await usersRepositories.getUserById(id);
+    const user = await usersRepository.getUserById(id);
     console.log('Targeted ID', user)
     return user;
 };
 
 async function updateUser(id, user) {
     return await sequelize.transaction(async (transaction) => {
-        const userExists = await usersRepositories.getUserById(id);
+        const userExists = await usersRepository.getUserById(id);
         if (!userExists) {
             throw new NotFoundError(`User with ID ${id} not found`);
         }
@@ -52,14 +52,14 @@ async function updateUser(id, user) {
             profilePicture: user.profilePicture,
             cityId: user.cityId,
         }
-        const updated = await usersRepositories.updateUser(id, newUser, transaction);
+        const updated = await usersRepository.updateUser(id, newUser, transaction);
         return updated;
     });
 };
 
 async function adminUpdateUser(id, user) {
     return await sequelize.transaction(async (transaction) => {
-        const userExists = await usersRepositories.getUserById(id);
+        const userExists = await usersRepository.getUserById(id);
         if (!userExists) {
             throw new NotFoundError(`User with ID ${id} not found`);
         }
@@ -71,20 +71,20 @@ async function adminUpdateUser(id, user) {
             profilePicture: user.profilePicture,
             cityId: user.cityId,
         }
-        const updated = await usersRepositories.updateUser(id, newUser, transaction);
+        const updated = await usersRepository.updateUser(id, newUser, transaction);
         return updated;
     });
 };
 
 async function deleteUser(id) {
     return await sequelize.transaction(async (transaction) => {
-        const userExist = await usersRepositories.getUserById(id);
+        const userExist = await usersRepository.getUserById(id);
         if (!userExist) throw new NotFoundError(`User with ID ${id} not found`);
 
         const newUser = { tokenRevokedBefore: new Date() };
-        await usersRepositories.updateUser(userExist.id, newUser, transaction);
+        await usersRepository.updateUser(userExist.id, newUser, transaction);
 
-        const deleted = await usersRepositories.deleteUser(id, transaction);
+        const deleted = await usersRepository.deleteUser(id, transaction);
         return deleted;
     });
 };
@@ -92,7 +92,7 @@ async function deleteUser(id) {
 async function requestToRestaureAccount(phoneNumber, ipAdress) {
     return await sequelize.transaction(async (transaction) => {
         const cleanPhoneNumber = formatPhoneNumber(phoneNumber);
-        const user = await usersRepositories.getUserByPhoneNumber(cleanPhoneNumber, false);
+        const user = await usersRepository.getUserByPhoneNumber(cleanPhoneNumber, false);
         if (!user) throw new NotFoundError(`User with phone number ${phoneNumber} not found`);
         if (!user.deletedAt) throw new GoneError(`Account is not deleted`);
 
@@ -106,9 +106,9 @@ async function requestToRestaureAccount(phoneNumber, ipAdress) {
         }
 
         // invalide les anciens otps pour le même utilisateur
-        await authRepositories.invalidateOtps(user.id, 'RESTORE_ACCOUNT', transaction);
+        await authRepository.invalidateOtps(user.id, 'RESTORE_ACCOUNT', transaction);
 
-        const otp = await authRepositories.createOtp(otpData, transaction)
+        const otp = await authRepository.createOtp(otpData, transaction)
             .catch(err => {
                 if (err.name === 'SequelizeUniqueConstraintError') throw new ConflictError(err.message);
                 throw err;
@@ -130,10 +130,10 @@ async function validateAccountRestauration(phoneNumber, otpCode) {
         };
 
         const cleanPhoneNumber = formatPhoneNumber(phoneNumber);
-        const user = await usersRepositories.getUserByPhoneNumber(cleanPhoneNumber, false);
+        const user = await usersRepository.getUserByPhoneNumber(cleanPhoneNumber, false);
         if (!user) throw new NotFoundError(`User with phone ${cleanPhoneNumber} not found`);
 
-        const otp = await authRepositories.getOtpByUserIdAndType(
+        const otp = await authRepository.getOtpByUserIdAndType(
             user.id, 'RESTORE_ACCOUNT',
             { lock: transaction.LOCK.UPDATE }
         );
@@ -145,14 +145,14 @@ async function validateAccountRestauration(phoneNumber, otpCode) {
 
         const isValid = await bcrypt.compare(otpCode, otp.otpHash);
         if (!isValid) {
-            await authRepositories.incrementOtpAttempts(otp.id, transaction);
+            await authRepository.incrementOtpAttempts(otp.id, transaction);
             throw new AuthentificationError('Invalid OTP');
         };
 
-        await authRepositories.consumeOtp(otp.id, transaction);
+        await authRepository.consumeOtp(otp.id, transaction);
 
         // Resature account
-        const restauredUser = await usersRepositories.restoreUser(user.id, transaction);
+        const restauredUser = await usersRepository.restoreUser(user.id, transaction);
 
         return restauredUser;
     });

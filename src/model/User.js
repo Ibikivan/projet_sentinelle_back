@@ -72,34 +72,34 @@ const User = sequelize.define('User', {
 
 User.associate = (models) => {
     User.hasMany(models.Community, {
-        foreignKey: 'user_id',
+        foreignKey: 'userId',
         as: 'communities',
     });
 
     User.hasMany(models.PrayerCrew, {
-        foreignKey: 'user_id',
+        foreignKey: 'userId',
         as: 'prayerCrews',
     });
 
     User.hasMany(models.PrayerSubject, {
-        foreignKey: 'user_id',
+        foreignKey: 'userId',
         as: 'prayerSubjects',
     });
 
     User.hasMany(models.Comment, {
-        foreignKey: 'user_id',
+        foreignKey: 'userId',
         as: 'comments',
     });
 
     User.hasMany(models.Otp, {
-        foreignKey: 'user_id',
+        foreignKey: 'userId',
         as: 'otps',
     });
 
     // Opimisation possible en ne rajoutant que l'info de la city dont on a besoin,
     // sans associaion à la table
     User.belongsTo(models.City, {
-        foreignKey: 'city_id',
+        foreignKey: 'cityId',
         as: 'city',
     });
 };

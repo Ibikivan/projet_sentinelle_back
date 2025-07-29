@@ -155,7 +155,7 @@ const City = sequelize.define('City', {
 
 City.associate = (models) => {
     City.hasMany(models.User, {
-        foreignKey: 'city_id',
+        foreignKey: 'cityId',
         as: 'residents',
     });
 };

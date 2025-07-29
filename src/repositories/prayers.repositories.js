@@ -4,16 +4,46 @@ async function createSubject(subject, transaction=null) {
     return await PrayerSubject.create(subject, { transaction });
 };
 
-async function getAllPublicSubjects() {
-    return await PrayerSubject.findAll({ where: { isPublic: true } });
+async function getAllPublicSubjects(params={}) {
+    let where = {};
+    let config = {
+        order: [['createdAt', 'DESC']]
+    };
+
+    if (params.isPublic) where.isPublic = params.isPublic;
+    if (params.state) where.state = params.state;
+
+    if (params.limit) config.limit = params.limit;
+    if (params.offset) config.offset = params.offset;
+    if (params.order) config.order = [['createdAt', params.order]];
+
+    return await PrayerSubject.findAll({
+        where,
+        ...config
+    });
 };
 
-async function getAllCurrentUserSubjects(userId) {
-    return await PrayerSubject.findAll({ where: { userId } })
+async function getAllCurrentUserSubjects(userId, params={}) {
+    let where = { userId: userId };
+    let config = {
+        order: [['createdAt', 'DESC']]
+    };
+
+    if (params.isPublic) where.isPublic = params.isPublic;
+    if (params.state) where.state = params.state;
+
+    if (params.limit) config.limit = params.limit;
+    if (params.offset) config.offset = params.offset;
+    if (params.order) config.order = [['createdAt', params.order]];
+
+    return await PrayerSubject.findAll({
+        where,
+        ...config
+    });
 }
 
 async function getOnePublicSubject(id) {
-    return await PrayerSubject.findByPk(id, { where: { isPublic: true } });
+    return await PrayerSubject.findOne({ where: { id, isPublic: true } });
 };
 
 async function getOneCurrentUserSubject(id, userId) {
@@ -21,10 +51,12 @@ async function getOneCurrentUserSubject(id, userId) {
 };
 
 async function updateCurrentUserSubject(id, userId, data, transaction=null) {
-    return await PrayerSubject.update(data, {
+    const [affectedRows] = await PrayerSubject.update(data, {
         where: { id, userId },
         transaction
     });
+    if (affectedRows === 0) return null;
+    return await PrayerSubject.findOne({ where: { id, userId }, transaction });
 };
 
 async function deleteCurrentUserSubject(id, userId, transaction=null) {
