@@ -37,7 +37,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/subjects', prayerRoutes);
 app.use('/api/testimonies', testimonyRoutes);
 app.use('/api/sharings', sharingRoutes);
-// app.use('/api/prayers', sessionsRoutes);
+app.use('/api/prayer-session', sessionsRoutes);
 
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(specs, null, {
     swaggerOptions: { withCredentials: true }
