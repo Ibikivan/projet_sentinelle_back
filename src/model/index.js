@@ -4,7 +4,7 @@ const User = require('./User');
 const City = require('./City');
 const Otp = require('./Otp');
 const PrayerSubject = require('./PrayerSubject');
-const Comment = require('./Comment');
+const Sharing = require('./Sharing');
 const Testimony = require('./Testimony');
 const Community = require('./Community');
 const PrayerCrew = require('./PrayerCrew');
@@ -14,7 +14,7 @@ const models = {
     City,
     Otp,
     PrayerSubject,
-    Comment,
+    Sharing,
     Testimony,
     Community,
     PrayerCrew

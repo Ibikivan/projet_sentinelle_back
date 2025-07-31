@@ -11,7 +11,8 @@ const usersRoutes = require('./src/routes/users.routes');
 const authRoutes = require('./src/routes/auth.routes');
 const prayerRoutes = require('./src/routes/prayers.routes');
 const testimonyRoutes = require('./src/routes/testimonies.routes');
-const commentRoutes = require('./src/routes/comments.routes');
+const sharingRoutes = require('./src/routes/sharings.routes');
+const sessionsRoutes = require('./src/routes/sessions.routes');
 
 envVarTest()
 testDBConnexion()
@@ -35,7 +36,8 @@ app.use('/api/users', usersRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/subjects', prayerRoutes);
 app.use('/api/testimonies', testimonyRoutes);
-app.use('/api/comments', commentRoutes)
+app.use('/api/sharings', sharingRoutes);
+// app.use('/api/prayers', sessionsRoutes);
 
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(specs, null, {
     swaggerOptions: { withCredentials: true }

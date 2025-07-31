@@ -64,9 +64,9 @@ PrayerSubject.associate = (models) => {
         as: 'communities',
     });
 
-    PrayerSubject.hasMany(models.Comment, {
+    PrayerSubject.hasMany(models.Sharing, {
         foreignKey: 'subjectId',
-        as: 'comments',
+        as: 'sharings',
     })
 };
 

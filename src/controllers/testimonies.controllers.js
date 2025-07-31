@@ -27,9 +27,7 @@ const updateTestimony = asyncHandler(async (req, res) => {
 
 const deleteTestimony = asyncHandler(async (req, res) => {
     await testimoniesServices.deleteTestimony(req.params.subjectId, req.user.id);
-    res.status(204).json({
-        message: 'Testimony deleted'
-    });
+    res.sendStatus(204);
 });
 
 module.exports = {

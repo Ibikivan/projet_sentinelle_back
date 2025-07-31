@@ -23,7 +23,7 @@ const updateCity = asyncHandler(async (req, res) => {
 
 const deleteCity = asyncHandler(async (req, res) => {
     const city = await citiesServices.deleteCity(req.params.id);
-    res.status(200).json({message: 'City deleted', city});
+    res.sendStatus(204);
 });
 
 module.exports = {

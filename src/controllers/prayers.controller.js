@@ -55,7 +55,7 @@ const updateCurrentUserSubject = asyncHandler(async (req, res) => {
 const deleteCurrentUserSubject = asyncHandler(async (req, res) => {
     const id = req.params.id;
     await prayerServices.deleteCurrentUserSubject(id, req.user.id);
-    res.status(204).send();
+    res.sendStatus(204);
 });
 
 const updatePrayerVisibility = asyncHandler(async (req, res) => {

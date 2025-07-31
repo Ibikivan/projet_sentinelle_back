@@ -86,9 +86,9 @@ User.associate = (models) => {
         as: 'prayerSubjects',
     });
 
-    User.hasMany(models.Comment, {
+    User.hasMany(models.Sharing, {
         foreignKey: 'userId',
-        as: 'comments',
+        as: 'sharings',
     });
 
     User.hasMany(models.Otp, {

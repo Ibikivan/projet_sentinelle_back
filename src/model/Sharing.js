@@ -2,7 +2,7 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 const { ValidationError } = require("../utils/errors.classes");
 
-const Comment = sequelize.define('Comment', {
+const Sharing = sequelize.define('Sharing', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -24,7 +24,7 @@ const Comment = sequelize.define('Comment', {
         validate: { isIn: [['text', 'voice']] },
     },
 }, {
-    tableName: 'comments',
+    tableName: 'sharings',
     timestamps: true,
     paranoid: true,
     underscored: true,
@@ -38,26 +38,26 @@ const Comment = sequelize.define('Comment', {
     validate: {
         contentOrVoice() {
             if (this.type === 'text' && !this.content) {
-                throw new ValidationError('Content is required for text comments');
+                throw new ValidationError('Content is required for text sharings');
             };
 
             if (this.type === 'voice' && !this.voiceUrl) {
-                throw new ValidationError('Voice URL is required for voice comments');
+                throw new ValidationError('Voice URL is required for voice sharings');
             };
         }
     },
 });
 
-Comment.associate = (models) => {
-    Comment.belongsTo(models.User, {
+Sharing.associate = (models) => {
+    Sharing.belongsTo(models.User, {
         foreignKey: 'userId',
         as: 'creator',
     });
 
-    Comment.belongsTo(models.PrayerSubject, {
+    Sharing.belongsTo(models.PrayerSubject, {
         foreignKey: 'subjectId',
         as: 'subject',
     });
 };
 
-module.exports = Comment;
+module.exports = Sharing;

@@ -4,9 +4,9 @@ const { authenticate } = require('../middlewares/auth.middleware');
 
 const router = express.Router();
 
-router.post('/subject/:subjectId/testimony', authenticate, testimoniesController.addTestimony);
-router.get('/subject/:subjectId/testimony', authenticate, testimoniesController.getTestimonyBySubject);
-router.put('/subject/:subjectId/testimony', authenticate, testimoniesController.updateTestimony);
-router.delete('/subject/:subjectId/testimony', authenticate, testimoniesController.deleteTestimony);
+router.post('/subjects/:subjectId', authenticate, testimoniesController.addTestimony);
+router.get('/subjects/:subjectId', authenticate, testimoniesController.getTestimonyBySubject);
+router.put('/subjects/:subjectId', authenticate, testimoniesController.updateTestimony);
+router.delete('/subjects/:subjectId', authenticate, testimoniesController.deleteTestimony);
 
 module.exports = router;

@@ -24,7 +24,7 @@ const deleteProfile = asyncHandler(async (req, res) => {
         sameSite: 'lax',
         path: '/api'
     });
-    res.status(200).json({message: 'Profile deleted', user});
+    res.sendStatus(204);
 });
 
 const getUserById = asyncHandler(async (req, res) => {
@@ -50,7 +50,7 @@ const deleteUser = asyncHandler(async (req, res) => {
         sameSite: 'lax',
         path: '/api'
     });
-    res.status(200).json({message: 'User deleted', user});
+    res.sendStatus(204);
 });
 
 const requestToRestoreUser = asyncHandler(async (req, res) => {
