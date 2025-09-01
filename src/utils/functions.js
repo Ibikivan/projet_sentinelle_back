@@ -1,5 +1,6 @@
 const usersRepository = require('../repositories/users.repositories');
 const prayersRepository = require('../repositories/prayers.repositories');
+const sessionsRepository = require('../repositories/sessions.repositories')
 const { AuthentificationError, NotFoundError } = require('./errors.classes');
 
 async function getUserAndSubject(id, userId) {
@@ -12,6 +13,13 @@ async function getUserAndSubject(id, userId) {
     return {user, subject};
 };
 
+async function getCurrentUserSession(id, userId) {
+    const session = await sessionsRepository.getSessionById(id);
+    if (!session || session.userId !== userId) throw new NotFoundError(`No session ${id} found for the current user`);
+    return session;
+};
+
 module.exports = {
     getUserAndSubject,
+    getCurrentUserSession,
 }

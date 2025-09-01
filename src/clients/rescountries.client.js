@@ -1,5 +1,5 @@
-import axios from "axios";
-import config from './config.js';
+const axios = require("axios");
+const config = require('./config');
 
 const { rescountries } = config;
 const country = axios.create({
@@ -7,9 +7,13 @@ const country = axios.create({
     timeout: rescountries.timeout,
 });
 
-export async function getAllCountries() {
+async function getAllCountries() {
     const response = await country.get('/v2/all', {
         params: { fields: 'alpha2Code,callingCodes,region,name' }
     });
     return response.data;
+}
+
+module.exports = {
+    getAllCountries
 };

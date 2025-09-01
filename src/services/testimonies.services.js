@@ -2,7 +2,7 @@ const { sequelize } = require("../model");
 const { ValidationError, NotFoundError } = require("../utils/errors.classes");
 const prayersRepository = require("../repositories/prayers.repositories");
 const testimoniesRepository = require("../repositories/testimonies.repositories");
-const { getUserAndSubject } = require("../utils/fonctions");
+const { getUserAndSubject } = require("../utils/functions");
 
 async function addTestimony(prayerId, userId, data) {
     return await sequelize.transaction(async (transaction) => {

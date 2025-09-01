@@ -158,6 +158,11 @@ City.associate = (models) => {
         foreignKey: 'cityId',
         as: 'residents',
     });
+
+    City.hasMany(models.PrayerSession, {
+        foreignKey: 'cityId',
+        as: 'intercessor'
+    })
 };
 
 module.exports = City;

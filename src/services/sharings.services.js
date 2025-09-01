@@ -1,5 +1,5 @@
 const { ValidationError, where } = require("sequelize");
-const { getUserAndSubject } = require("../utils/fonctions");
+const { getUserAndSubject } = require("../utils/functions");
 const { sequelize } = require("../model");
 const sharingsRepository = require("../repositories/sharings.repositories");
 const userRepository = require("../repositories/users.repositories");

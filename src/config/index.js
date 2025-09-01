@@ -43,6 +43,9 @@ const env = cleanEnv(process.env, {
 
     RESCOUNTRIES_URL: url({ default: 'https://restcountries.com', desc: 'Base URL RestCountries' }),
     RESCOUNTRIES_TIMEOUT: num({ default: 5000, desc: 'Timeout RestCountries en ms' }),
+
+    BIGDATACLOUD_URL: url({ default: 'https://api-bdc.io', desc: 'Base URL BigDataCloud' }),
+    BIGDATACLOUD_TIMEOUT: num({ default: 5000, desc: 'Timeout BigDataCloud en ms' }),
 });
 
 export default env;

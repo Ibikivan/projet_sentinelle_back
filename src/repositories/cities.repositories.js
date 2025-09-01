@@ -17,6 +17,20 @@ async function getAllCities() {
     return cities;
 }
 
+async function getCitiesByName(name) {
+    const cities = await City.findAll({
+        where: { name }
+    });
+    return cities;
+}
+
+async function getCitiesByCountry(countryCode) {
+    const cities = await City.findAll({
+        where: { countryCode }
+    });
+    return cities;
+}
+
 async function getCityById(id) {
     const city = await City.findByPk(id);
     return city;
@@ -43,6 +57,8 @@ module.exports = {
     createCity,
     getAllCities,
     getCityById,
+    getCitiesByName,
+    getCitiesByCountry,
     updateCity,
     deleteCity,
 };

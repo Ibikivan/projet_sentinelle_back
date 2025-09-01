@@ -2,7 +2,7 @@ const { sequelize } = require("../model");
 const prayersRepository = require("../repositories/prayers.repositories");
 const usersRepository = require("../repositories/users.repositories");
 const { NotFoundError, ValidationError, AuthentificationError } = require("../utils/errors.classes");
-const { getUserAndSubject } = require("../utils/fonctions");
+const { getUserAndSubject } = require("../utils/functions");
 
 async function createSubject(data, userId) {
     return await sequelize.transaction(async (transaction) => {

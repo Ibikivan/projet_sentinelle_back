@@ -8,6 +8,7 @@ const Sharing = require('./Sharing');
 const Testimony = require('./Testimony');
 const Community = require('./Community');
 const PrayerCrew = require('./PrayerCrew');
+const PrayerSession = require('./PrayerSession');
 
 const models = {
     User,
@@ -17,7 +18,8 @@ const models = {
     Sharing,
     Testimony,
     Community,
-    PrayerCrew
+    PrayerCrew,
+    PrayerSession,
 };
 
 Object.values(models)

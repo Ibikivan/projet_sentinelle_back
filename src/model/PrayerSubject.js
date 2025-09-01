@@ -67,7 +67,12 @@ PrayerSubject.associate = (models) => {
     PrayerSubject.hasMany(models.Sharing, {
         foreignKey: 'subjectId',
         as: 'sharings',
-    })
+    });
+
+    PrayerSubject.hasMany(models.PrayerSession, {
+        foreignKey: 'subjectId',
+        as: 'session'
+    });
 };
 
 module.exports = PrayerSubject;

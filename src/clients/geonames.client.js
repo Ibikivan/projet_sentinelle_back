@@ -1,5 +1,5 @@
-import axios from "axios";
-import config from './config.js';
+const axios = require("axios");
+const config = require('./config');
 
 const { geoname } = config;
 const geo = axios.create({
@@ -7,16 +7,21 @@ const geo = axios.create({
   timeout: geoname.timeout,
 });
 
-export async function getAllCitiesPaginated(featureClass='p', maxRows=1000, startRow=0) {
+async function getAllCitiesPaginated(featureClass='p', maxRows=1000, startRow=0) {
     const response = await geo.get('/searchJSON', {
         params: { featureClass, maxRows, startRow, username: geoname.username }
     });
     return response.data;
-};
+}
 
-export async function getAllCountries() {
+async function getAllCountries() {
     const response = await geo.get('/countryInfoJSON', {
         params: { username: geoname.username }
     });
     return response.data;
+}
+
+module.exports = {
+    getAllCitiesPaginated,
+    getAllCountries
 };

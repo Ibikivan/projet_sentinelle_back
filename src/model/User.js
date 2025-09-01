@@ -102,6 +102,11 @@ User.associate = (models) => {
         foreignKey: 'cityId',
         as: 'city',
     });
+
+    User.hasMany(models.PrayerSession, {
+        foreignKey: 'userId',
+        as: 'location'
+    });
 };
 
 User.prototype.toJSON = function () {
