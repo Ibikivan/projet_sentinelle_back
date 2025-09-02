@@ -7,6 +7,7 @@ async function getUserAndSubject(id, userId) {
     const user = await usersRepository.getUserById(userId);
     if (!user) throw new AuthentificationError('User data is missing');
 
+    // Trouver un moyen d'accepter la requette si le sujet est publique...
     const subject = await prayersRepository.getOneCurrentUserSubject(id, user.id);
     if (!subject) throw new NotFoundError(`Subject '${id}' not found for the user '${user.id}'`);
 

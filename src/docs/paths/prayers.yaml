@@ -342,7 +342,7 @@ paths:
           required: true
           schema:
             type: string
-            enum: [active, answered, closed]
+            enum: [active, close_exhausted, close_expired]
           description: Nouvel état du sujet
       responses:
         '200':

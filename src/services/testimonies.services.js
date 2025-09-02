@@ -24,7 +24,7 @@ async function addTestimony(prayerId, userId, data) {
         const testimony = await testimoniesRepository.createTestimony(data, transaction);
         if (!testimony) throw new NotFoundError("Testimony not founded");
         
-        prayer.setTestimony(testimony, { transaction });
+        await prayer.setTestimony(testimony, { transaction });
         return testimony;
     });
 };
@@ -55,7 +55,7 @@ async function deleteTestimony(subjectId, userId) {
         const testimony = await subject.getTestimony();
         if (!testimony) throw new NotFoundError("Testimony not found");
         
-        subject.setTestimony(null, { transaction });
+        await subject.setTestimony(null, { transaction });
         await testimony.destroy({ transaction });
     });
 };

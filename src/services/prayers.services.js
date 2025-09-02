@@ -95,7 +95,7 @@ async function updatePrayerState(id, userId, state) {
 
         if (!validStates.includes(state)) throw new ValidationError(`Invalde state: '${state}'`);
         subject.state = state;
-        subject.save({ transaction });
+        await subject.save({ transaction });
 
         return subject;
     });
