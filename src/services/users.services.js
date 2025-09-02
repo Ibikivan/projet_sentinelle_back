@@ -23,8 +23,15 @@ async function createUser(user) {
     });
 };
 
-async function getAllUsers() {
-    const users = await usersRepository.getAllUsers();
+async function getAllUsers(params = {}) {
+    // Validate and normalize params
+    const validRoles = ['USER', 'ADMIN', 'SUPER_ADMIN'];
+    if (params.role && !validRoles.includes(params.role))
+        throw new ValidationError("Invalid role parameter");
+    if (params.limit && parseInt(params.limit, 10) > 100)
+        throw new ValidationError('Limit cannot exceed 100');
+
+    const users = await usersRepository.getAllUsers(params);
     return users;
 };
 

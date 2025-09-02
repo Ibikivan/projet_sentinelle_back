@@ -30,9 +30,11 @@ async function addSharing(subjectId, userId, data) {
     });
 };
 
-async function getSharingsBySubject(subjectId, userId) {
+async function getSharingsBySubject(subjectId, userId, params = {}) {
     const { subject } = await getUserAndSubject(subjectId, userId);
-    return await sharingsRepository.getSharingsBySubject(subject.id);
+    if (params.limit && parseInt(params.limit, 10) > 100)
+        throw new ValidationError('Limit cannot exceed 100');
+    return await sharingsRepository.getSharingsBySubject(subject.id, params);
 };
 
 async function getSharingById(id, userId) {
@@ -66,9 +68,23 @@ async function deleteSharing(id, userId) {
     });
 };
 
-async function getUserSharings(userId) {
+async function getUserSharings(userId, params = {}) {
     const user = await userRepository.getUserById(userId);
-    return await user.getSharings();
+    // Build options for association getter
+    const where = {};
+    const order = [];
+    if (params.type) where.type = params.type;
+    const validSortFields = ['createdAt', 'type'];
+    if (params.sortBy && validSortFields.includes(params.sortBy)) {
+        const sortOrder = params.sortOrder === 'asc' ? 'ASC' : 'DESC';
+        order.push([params.sortBy, sortOrder]);
+    } else {
+        order.push(['createdAt', 'DESC']);
+    }
+    const limit = params.limit ? parseInt(params.limit, 10) : undefined;
+    const page = params.page ? parseInt(params.page, 10) : undefined;
+    const offset = limit && page ? (page - 1) * limit : undefined;
+    return await user.getSharings({ where, order, limit, offset });
 };
 
 module.exports = {

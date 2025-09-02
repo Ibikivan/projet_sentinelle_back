@@ -5,16 +5,17 @@ const { ConflictError, NotFoundError } = require('../utils/errors.classes');
 async function addCity(city) {
     return await sequelize.transaction(async (transaction) => {
         const isCityExist = await citiesRepository.getCityByCode(city.fcl); // A remplacer par un identifiant unique de ville
-        if (isCityExist) {
+        if (isCityExist)
             throw new ConflictError('City already exists');
-        }
         const newCity = await citiesRepository.createCity(city, transaction);
         return newCity;
     })
 }
 
-async function getAllCities() {
-    const cities = await citiesRepository.getAllCities();
+async function getAllCities(params = {}) {
+    if (params.limit && parseInt(params.limit, 10) > 100)
+        throw new ConflictError('Limit cannot exceed 100');
+    const cities = await citiesRepository.getAllCities(params);
     return cities;
 }
 

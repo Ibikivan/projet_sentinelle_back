@@ -64,6 +64,65 @@ paths:
         - Users
       security:
         - cookieAuth: []
+      parameters:
+        - name: role
+          in: query
+          description: Filtrer par rôle utilisateur
+          schema:
+            type: string
+            enum: [USER, ADMIN, SUPER_ADMIN]
+        - name: cityId
+          in: query
+          description: Filtrer par identifiant de ville
+          schema:
+            type: integer
+        - name: email
+          in: query
+          description: Filtrer par email exact
+          schema:
+            type: string
+            format: email
+        - name: q
+          in: query
+          description: Recherche textuelle (nom, prénom ou email)
+          schema:
+            type: string
+        - name: includeCity
+          in: query
+          description: Inclure les informations minimales de la ville
+          schema:
+            type: string
+            enum: ['true','false']
+            default: 'false'
+        - name: sortBy
+          in: query
+          description: Champ de tri
+          schema:
+            type: string
+            enum: [createdAt, lastName, firstName, role, cityId]
+            default: createdAt
+        - name: sortOrder
+          in: query
+          description: Ordre de tri
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: page
+          in: query
+          description: Numéro de page (à partir de 1)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Nombre d'éléments par page (max 100)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
       responses:
         '200':
           description: Liste des utilisateurs récupérée avec succès.

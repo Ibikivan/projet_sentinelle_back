@@ -47,9 +47,71 @@ paths:
 
     get:
       summary: Récupérer toutes les villes
-      description: Retourne une liste de toutes les villes disponibles dans la base de données.
+      description: Retourne une liste de toutes les villes disponibles dans la base de données, avec filtres, tri et pagination.
       tags:
         - Cities
+      parameters:
+        - name: name
+          in: query
+          description: Filtrer par nom exact de ville
+          schema:
+            type: string
+        - name: countryCode
+          in: query
+          description: Filtrer par code pays (ISO 3166-1 alpha-2)
+          schema:
+            type: string
+            example: FR
+        - name: countryName
+          in: query
+          description: Filtrer par nom de pays
+          schema:
+            type: string
+        - name: continent
+          in: query
+          description: Filtrer par code continent
+          schema:
+            type: string
+            example: EU
+        - name: continentName
+          in: query
+          description: Filtrer par nom de continent
+          schema:
+            type: string
+        - name: q
+          in: query
+          description: Recherche textuelle (ville, région administrative ou pays)
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          description: Champ de tri
+          schema:
+            type: string
+            enum: [createdAt, name, population, countryCode]
+            default: createdAt
+        - name: sortOrder
+          in: query
+          description: Ordre de tri
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: page
+          in: query
+          description: Numéro de page (à partir de 1)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Nombre d'éléments par page (max 100)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
       responses:
         '200':
           description: Liste des villes récupérée avec succès.

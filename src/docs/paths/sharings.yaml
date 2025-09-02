@@ -1,0 +1,292 @@
+paths:
+  /sharings:
+    post:
+      summary: Ajouter un partage
+      description: Permet à un utilisateur connecté d'ajouter un partage pour un sujet de prière.
+      tags:
+        - Sharings
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: subjectId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: ID du sujet de prière
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  example: 'Partage important sur ce sujet de prière'
+                type:
+                  type: string
+                  enum: [prayer, encouragement, scripture, testimony]
+                  example: 'encouragement'
+              required:
+                - content
+                - type
+      responses:
+        '201':
+          description: Partage ajouté avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sharing'
+        '400':
+          description: Erreur de validation des données.
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '404':
+          description: Sujet de prière non trouvé.
+        '500':
+          description: Erreur interne du serveur.
+
+    get:
+      summary: Récupérer les partages d'un sujet de prière
+      description: Récupère tous les partages associés à un sujet de prière spécifique, avec filtres, tri et pagination.
+      tags:
+        - Sharings
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: subjectId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: ID du sujet de prière
+        - name: type
+          in: query
+          description: Filtrer par type de partage
+          schema:
+            type: string
+            enum: [text, voice]
+        - name: userId
+          in: query
+          description: Filtrer par créateur (ID utilisateur)
+          schema:
+            type: integer
+        - name: includeUser
+          in: query
+          description: Inclure les informations minimales du créateur
+          schema:
+            type: string
+            enum: ['true','false']
+            default: 'false'
+        - name: sortBy
+          in: query
+          description: Champ de tri
+          schema:
+            type: string
+            enum: [createdAt, type]
+            default: createdAt
+        - name: sortOrder
+          in: query
+          description: Ordre de tri
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: page
+          in: query
+          description: Numéro de page (à partir de 1)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Nombre d'éléments par page (max 100)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Liste des partages récupérée avec succès.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sharing'
+        '400':
+          description: ID du sujet de prière manquant.
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '500':
+          description: Erreur interne du serveur.
+
+  /sharings/{id}:
+    get:
+      summary: Récupérer un partage par ID
+      description: Récupère un partage spécifique par son ID.
+      tags:
+        - Sharings
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID du partage
+      responses:
+        '200':
+          description: Partage récupéré avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sharing'
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '404':
+          description: Partage non trouvé.
+        '500':
+          description: Erreur interne du serveur.
+
+    put:
+      summary: Mettre à jour un partage
+      description: Permet à l'utilisateur connecté de mettre à jour son partage.
+      tags:
+        - Sharings
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID du partage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  example: 'Partage mis à jour avec plus de détails'
+                type:
+                  type: string
+                  enum: [prayer, encouragement, scripture, testimony]
+                  example: 'prayer'
+      responses:
+        '200':
+          description: Partage mis à jour avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sharing'
+        '400':
+          description: Erreur de validation des données.
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '403':
+          description: Non autorisé. L'utilisateur ne peut modifier que ses propres partages.
+        '404':
+          description: Partage non trouvé.
+        '500':
+          description: Erreur interne du serveur.
+
+    delete:
+      summary: Supprimer un partage
+      description: Permet à l'utilisateur connecté de supprimer son partage.
+      tags:
+        - Sharings
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID du partage
+      responses:
+        '200':
+          description: Partage supprimé avec succès.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Partage supprimé avec succès'
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '403':
+          description: Non autorisé. L'utilisateur ne peut supprimer que ses propres partages.
+        '404':
+          description: Partage non trouvé.
+        '500':
+          description: Erreur interne du serveur.
+
+  /sharings/user/me:
+    get:
+      summary: Récupérer tous les partages de l'utilisateur connecté
+      description: Récupère la liste de tous les partages créés par l'utilisateur connecté, avec filtres, tri et pagination.
+      tags:
+        - Sharings
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: type
+          in: query
+          description: Filtrer par type de partage
+          schema:
+            type: string
+            enum: [text, voice]
+        - name: sortBy
+          in: query
+          description: Champ de tri
+          schema:
+            type: string
+            enum: [createdAt, type]
+            default: createdAt
+        - name: sortOrder
+          in: query
+          description: Ordre de tri
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: page
+          in: query
+          description: Numéro de page (à partir de 1)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Nombre d'éléments par page (max 100)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Liste des partages de l'utilisateur récupérée avec succès.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sharing'
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '500':
+          description: Erreur interne du serveur.

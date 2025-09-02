@@ -10,7 +10,7 @@ const createSubject = asyncHandler(async (req, res) => {
 });
 
 const getAllPublicSubjects = asyncHandler(async (req, res) => {
-    const subjects = await prayerServices.getAllPublicSubjects();
+    const subjects = await prayerServices.getAllPublicSubjects(req.query);
     res.status(200).json({
         message: 'Subjects retrieved',
         data: subjects
@@ -18,7 +18,7 @@ const getAllPublicSubjects = asyncHandler(async (req, res) => {
 });
 
 const getAllCurrentUserSubjects = asyncHandler(async (req, res) => {
-    const subjects = await prayerServices.getAllCurrentUserSubjects(req.user.id);
+    const subjects = await prayerServices.getAllCurrentUserSubjects(req.user.id, req.query);
     res.status(200).json({
         message: 'Subjects retrieved',
         data: subjects

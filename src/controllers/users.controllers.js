@@ -7,7 +7,7 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 const getAllUsers = asyncHandler(async (req, res) => {
-    const users = await usersServices.getAllUsers();
+    const users = await usersServices.getAllUsers(req.query);
     res.status(200).json(users);
 });
 

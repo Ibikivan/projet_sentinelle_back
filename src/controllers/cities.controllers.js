@@ -7,7 +7,7 @@ const createCity = asyncHandler(async (req, res) => {
 });
 
 const getAllCities = asyncHandler(async (req, res) => {
-    const cities = await citiesServices.getAllCities();
+    const cities = await citiesServices.getAllCities(req.query);
     res.status(200).json(cities);
 });
 

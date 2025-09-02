@@ -12,8 +12,44 @@ async function createUser(user, transaction=null) {
     return newUser;
 }
 
-async function getAllUsers() {
-    const users = await User.findAll();
+async function getAllUsers(params = {}) {
+    const where = {};
+    const include = [];
+    const order = [];
+
+    // Filters
+    if (params.role) where.role = params.role;
+    if (params.cityId) where.cityId = params.cityId;
+    if (params.email) where.email = params.email;
+    if (params.q) {
+        // Basic OR search across name and email using sequelize operators
+        const { Op } = require('sequelize');
+        where[Op.or] = [
+            { firstName: { [Op.iLike || Op.like]: `%${params.q}%` } },
+            { lastName: { [Op.iLike || Op.like]: `%${params.q}%` } },
+            { email: { [Op.iLike || Op.like]: `%${params.q}%` } },
+        ];
+    }
+
+    // Include city minimal info when requested
+    if (params.includeCity === 'true')
+        include.push({ association: 'city', attributes: ['id', 'name', 'countryCode', 'countryName', 'continent', 'continentName'] });
+
+    // Sorting
+    const validSortFields = ['createdAt', 'lastName', 'firstName', 'role', 'cityId'];
+    if (params.sortBy && validSortFields.includes(params.sortBy)) {
+        const sortOrder = params.sortOrder === 'asc' ? 'ASC' : 'DESC';
+        order.push([params.sortBy, sortOrder]);
+    } else {
+        order.push(['createdAt', 'DESC']);
+    }
+
+    // Pagination
+    const limit = params.limit ? parseInt(params.limit, 10) : undefined;
+    const page = params.page ? parseInt(params.page, 10) : undefined;
+    const offset = limit && page ? (page - 1) * limit : undefined;
+
+    const users = await User.findAll({ where, include, order, limit, offset });
     return users;
 }
 

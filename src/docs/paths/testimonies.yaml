@@ -1,0 +1,189 @@
+paths:
+  /testimonies/subjects/{subjectId}:
+    post:
+      summary: Ajouter un témoignage à un sujet de prière
+      description: Permet à un utilisateur connecté d'ajouter un témoignage à un sujet de prière.
+      tags:
+        - Testimonies
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: subjectId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID du sujet de prière
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  example: 'Dieu a répondu à nos prières de manière miraculeuse!'
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                  example: 5
+              required:
+                - content
+      responses:
+        '201':
+          description: Témoignage ajouté avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Testimony'
+        '400':
+          description: Erreur de validation des données.
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '404':
+          description: Sujet de prière non trouvé.
+        '500':
+          description: Erreur interne du serveur.
+
+    get:
+      summary: Récupérer le témoignage d'un sujet de prière
+      description: Récupère le témoignage associé à un sujet de prière spécifique.
+      tags:
+        - Testimonies
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: subjectId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID du sujet de prière
+      responses:
+        '200':
+          description: Témoignage récupéré avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Testimony'
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '404':
+          description: Témoignage non trouvé.
+        '500':
+          description: Erreur interne du serveur.
+
+    put:
+      summary: Mettre à jour un témoignage
+      description: Permet à l'utilisateur connecté de mettre à jour son témoignage sur un sujet de prière.
+      tags:
+        - Testimonies
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: subjectId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID du sujet de prière
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  example: 'Témoignage mis à jour avec plus de détails'
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                  example: 4
+      responses:
+        '200':
+          description: Témoignage mis à jour avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Testimony'
+        '400':
+          description: Erreur de validation des données.
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '404':
+          description: Témoignage non trouvé.
+        '500':
+          description: Erreur interne du serveur.
+
+    delete:
+      summary: Supprimer un témoignage
+      description: Permet à l'utilisateur connecté de supprimer son témoignage sur un sujet de prière.
+      tags:
+        - Testimonies
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: subjectId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID du sujet de prière
+      responses:
+        '200':
+          description: Témoignage supprimé avec succès.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Témoignage supprimé avec succès'
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '404':
+          description: Témoignage non trouvé.
+        '500':
+          description: Erreur interne du serveur.
+
+components:
+  schemas:
+    Testimony:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          nullable: true
+          example: 'Guérison miraculeuse'
+        content:
+          type: string
+          nullable: true
+          example: 'Dieu a agi puissamment dans cette situation.'
+        voiceContent:
+          type: string
+          nullable: true
+          format: uri
+          example: 'https://cdn.example.com/voices/abc123.mp3'
+        attachements:
+          type: array
+          items:
+            type: string
+            format: uri
+          example: ['https://cdn.example.com/img/1.jpg']
+        createdAt:
+          type: string
+          format: date-time
+          example: '2025-05-04T12:34:56Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2025-05-05T09:12:30Z'

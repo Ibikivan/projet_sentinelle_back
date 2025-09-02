@@ -12,7 +12,7 @@ const addSharing = asyncHandler(async (req, res) => {
 
 const getSharingsBySubject = asyncHandler(async (req, res) => {
     const { subjectId } = req.query;
-    const sharings = await sharingsService.getSharingsBySubject(subjectId, req.user.id);
+    const sharings = await sharingsService.getSharingsBySubject(subjectId, req.user.id, req.query);
     res.status(200).json({
         message: "Sharings retrieved",
         data: sharings
@@ -44,7 +44,7 @@ const deleteSharing = asyncHandler(async (req, res) => {
 });
 
 const getUserSharings = asyncHandler(async (req, res) => {
-    const sharings = await sharingsService.getUserSharings(req.user.id);
+    const sharings = await sharingsService.getUserSharings(req.user.id, req.query);
     res.status(200).json({
         message: "User sharings retrieved",
         data: sharings

@@ -6,7 +6,6 @@ const { getUserAndSubject } = require("../utils/functions");
 
 async function createSubject(data, userId) {
     return await sequelize.transaction(async (transaction) => {
-
         if (!data.title) throw new ValidationError('Subject must have a title');
         const user = await usersRepository.getUserById(userId);
         if (!user) throw new AuthentificationError('User data is missing');
@@ -21,15 +20,29 @@ async function createSubject(data, userId) {
     });
 };
 
-async function getAllPublicSubjects() {
-    return await prayersRepository.getAllPublicSubjects();
+async function getAllPublicSubjects(params = {}) {
+    // Validate filters
+    const validStates = ['active', 'close_exhausted', 'close_expired'];
+    if (params.state && !validStates.includes(params.state))
+        throw new ValidationError("Invalid state parameter");
+    if (params.limit && parseInt(params.limit, 10) > 100)
+        throw new ValidationError('Limit cannot exceed 100');
+    // Default enforce public subjects
+    const query = { ...params, isPublic: true };
+    return await prayersRepository.getAllPublicSubjects(query);
 };
 
-async function getAllCurrentUserSubjects(userId) {
+async function getAllCurrentUserSubjects(userId, params = {}) {
     const user = await usersRepository.getUserById(userId);
     if (!user) throw new AuthentificationError('User data is missing');
 
-    return await prayersRepository.getAllCurrentUserSubjects(user.id);
+    const validStates = ['active', 'close_exhausted', 'close_expired'];
+    if (params.state && !validStates.includes(params.state))
+        throw new ValidationError("Invalid state parameter");
+    if (params.limit && parseInt(params.limit, 10) > 100)
+        throw new ValidationError('Limit cannot exceed 100');
+
+    return await prayersRepository.getAllCurrentUserSubjects(user.id, params);
 };
 
 async function getOnePublicSubject(id) {
