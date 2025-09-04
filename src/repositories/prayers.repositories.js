@@ -40,6 +40,10 @@ async function getAllCurrentUserSubjects(userId, params={}) {
         where,
         ...config
     });
+};
+
+async function getSubjectById(id) {
+    return await PrayerSubject.findByPk(id);
 }
 
 async function getOnePublicSubject(id) {
@@ -70,6 +74,7 @@ module.exports = {
     createSubject,
     getAllPublicSubjects,
     getAllCurrentUserSubjects,
+    getSubjectById,
     getOnePublicSubject,
     getOneCurrentUserSubject,
     updateCurrentUserSubject,
