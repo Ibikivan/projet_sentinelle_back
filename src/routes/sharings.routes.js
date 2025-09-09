@@ -1,10 +1,15 @@
 const express = require('express');
 const { authenticate } = require('../middlewares/auth.middleware');
 const sharingsController = require('../controllers/sharings.controllers');
+const { createUpload, FILE_TYPES } = require('../middlewares/uploads');
 
 const router = express.Router();
+const uploadVoice = createUpload({
+    folder: 'voiceUrl',
+    allowedTypes: FILE_TYPES.audio,
+});
 
-router.post('/', authenticate, sharingsController.addSharing); // subjectId in query params
+router.post('/', authenticate, uploadVoice, sharingsController.addSharing); // subjectId in query params
 router.get('/', authenticate, sharingsController.getSharingsBySubject); // subjectId in query params
 
 router.get('/:id', authenticate, sharingsController.getSharingById);

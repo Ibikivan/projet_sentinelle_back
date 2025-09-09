@@ -11,6 +11,12 @@ const getAllCities = asyncHandler(async (req, res) => {
     res.status(200).json(cities);
 });
 
+const researchCities = asyncHandler(async (req, res) => {
+    const keyword = req.query.keyword;
+    const cities = await citiesServices.researchCities(keyword);
+    res.status(200).json(cities);
+});
+
 const getCityById = asyncHandler(async (req, res) => {
     const city = await citiesServices.getCityById(req.params.id);
     res.status(200).json(city);
@@ -29,6 +35,7 @@ const deleteCity = asyncHandler(async (req, res) => {
 module.exports = {
     createCity,
     getAllCities,
+    researchCities,
     getCityById,
     updateCity,
     deleteCity,

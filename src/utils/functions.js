@@ -2,6 +2,7 @@ const usersRepository = require('../repositories/users.repositories');
 const prayersRepository = require('../repositories/prayers.repositories');
 const sessionsRepository = require('../repositories/sessions.repositories')
 const { AuthentificationError, NotFoundError } = require('./errors.classes');
+const fs = require('fs');
 
 async function getUserAndSubject(id, userId) {
     const user = await usersRepository.getUserById(userId);
@@ -23,7 +24,12 @@ async function getCurrentUserSession(id, userId) {
     return session;
 };
 
+function createFileIfDosntExist(path) {
+    if (!fs.existsSync(path)) fs.mkdirSync(path, { recursive: true });
+}
+
 module.exports = {
     getUserAndSubject,
     getCurrentUserSession,
+    createFileIfDosntExist
 }

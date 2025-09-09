@@ -17,10 +17,19 @@ async function getAllPublicSubjects(params={}) {
     if (params.offset) config.offset = params.offset;
     if (params.order) config.order = [['createdAt', params.order]];
 
-    return await PrayerSubject.findAll({
+    const result = await PrayerSubject.findAndCountAll({
         where,
         ...config
     });
+    return {
+        subjects: result.rows,
+        pagination: {
+            total: result.count,
+            page: params.limit ? Math.floor((params.offset || 0) / params.limit) + 1 : 1,
+            limit: parseInt(params.limit, 10) || result.count,
+            totalPages: params.limit ? Math.ceil(result.count / params.limit) : 1
+        }
+    };
 };
 
 async function getAllCurrentUserSubjects(userId, params={}) {
@@ -36,10 +45,19 @@ async function getAllCurrentUserSubjects(userId, params={}) {
     if (params.offset) config.offset = params.offset;
     if (params.order) config.order = [['createdAt', params.order]];
 
-    return await PrayerSubject.findAll({
+    const result = await PrayerSubject.findAndCountAll({
         where,
         ...config
     });
+    return {
+        subjects: result.rows,
+        pagination: {
+            total: result.count,
+            page: params.limit ? Math.floor((params.offset || 0) / params.limit) + 1 : 1,
+            limit: parseInt(params.limit, 10) || result.count,
+            totalPages: params.limit ? Math.ceil(result.count / params.limit) : 1
+        }
+    };
 };
 
 async function getSubjectById(id) {

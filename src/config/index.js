@@ -46,6 +46,7 @@ const env = cleanEnv(process.env, {
 
     BIGDATACLOUD_URL: url({ default: 'https://api-bdc.io', desc: 'Base URL BigDataCloud' }),
     BIGDATACLOUD_TIMEOUT: num({ default: 5000, desc: 'Timeout BigDataCloud en ms' }),
+    MAX_UPLOADS_FILES_SIZE: num({ default: 10, desc: 'Maximun uploaded files size in Mo' }),
 });
 
 export default env;

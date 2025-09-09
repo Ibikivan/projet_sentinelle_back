@@ -26,7 +26,7 @@ const User = sequelize.define('User', {
     },
     email: {
         type: DataTypes.STRING,
-        allowNull: true,
+        allowNull: false,
         validate: {
             isEmail: true,
         },
@@ -50,9 +50,6 @@ const User = sequelize.define('User', {
     profilePicture: {
         type: DataTypes.STRING,
         allowNull: true,
-        validate: {
-            isUrl: true,
-        },
     },
     tokenRevokedBefore: {
         type: DataTypes.DATE,
@@ -113,6 +110,7 @@ User.prototype.toJSON = function () {
     const values = Object.assign({}, this.get());
     delete values.password;
     delete values.tokenRevokedBefore;
+    values.profilePicture = process.env.BACKEND_ENDPOINT + values.profilePicture
     return values;
 };
 

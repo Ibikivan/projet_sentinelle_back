@@ -1,4 +1,5 @@
 const { City } = require("../model");
+const { Op, Sequelize } = require('sequelize');
 
 async function getCityByCode(fcl) {
     const city = await City.findOne({
@@ -25,7 +26,6 @@ async function getAllCities(params = {}) {
 
     // Basic search
     if (params.q) {
-        const { Op } = require('sequelize');
         where[Op.or] = [
             { name: { [Op.iLike || Op.like]: `%${params.q}%` } },
             { adminName1: { [Op.iLike || Op.like]: `%${params.q}%` } },
@@ -47,7 +47,45 @@ async function getAllCities(params = {}) {
     const page = params.page ? parseInt(params.page, 10) : undefined;
     const offset = limit && page ? (page - 1) * limit : undefined;
 
-    const cities = await City.findAll({ where, order, limit, offset });
+    const result = await City.findAndCountAll({ where, order, limit, offset });
+
+    const currentPage = (limit && offset !== undefined)
+        ? Math.floor(offset / limit) + 1
+        : (page || 1);
+    const totalPages = limit ? Math.ceil(result.count / limit) : 1;
+
+    return {
+        cities: result.rows,
+        pagination: {
+            total: result.count,
+            page: currentPage,
+            limit: limit,
+            totalPages: totalPages
+        }
+    };
+}
+
+async function fullTextResearch(params, lang='english') {
+    const cities = await City.findAll({
+        attributes: {
+            include: [[
+                Sequelize.literal(`
+                    ts_rank(search_field, websearch_to_tsquery('${lang}', :search))
+                `),
+                'rank'
+            ], [
+                Sequelize.literal(`
+                    ts_headline('${lang}', country_name, websearch_to_tsquery('${lang}', :search))    
+                `),
+                'excerpt'
+            ]]
+        },
+        where: Sequelize.literal(`
+            search_field @@ websearch_to_tsquery('${lang}', :search)
+        `),
+        order: [[Sequelize.literal('rank'), 'DESC']],
+        replacements: { search: params }
+    })
     return cities;
 }
 
@@ -90,6 +128,7 @@ module.exports = {
     getCityByCode,
     createCity,
     getAllCities,
+    fullTextResearch,
     getCityById,
     getCitiesByName,
     getCitiesByCountry,

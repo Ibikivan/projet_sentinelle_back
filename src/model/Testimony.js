@@ -20,7 +20,6 @@ const Testimony = sequelize.define('Testimony', {
     voiceContent: {
         type: DataTypes.STRING,
         allowNull: true,
-        validate: { isUrl: true }
     },
     attachements: {
         type: DataTypes.ARRAY(DataTypes.STRING),
@@ -53,6 +52,12 @@ Testimony.associate = (models) => {
         foreignKey: 'testimonyId',
         as: 'prayerSubject',
     });
+};
+
+Testimony.prototype.toJSON = function () {
+    const values = Object.assign({}, this.get());
+    values.voiceContent = process.env.BACKEND_ENDPOINT + values.voiceContent
+    return values;
 };
 
 module.exports = Testimony;

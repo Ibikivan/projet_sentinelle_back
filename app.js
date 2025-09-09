@@ -13,6 +13,7 @@ const prayerRoutes = require('./src/routes/prayers.routes');
 const testimonyRoutes = require('./src/routes/testimonies.routes');
 const sharingRoutes = require('./src/routes/sharings.routes');
 const sessionsRoutes = require('./src/routes/sessions.routes');
+const path = require('path');
 
 envVarTest()
 testDBConnexion()
@@ -30,6 +31,8 @@ app.use(cors({
 
 app.use(express.json());
 app.use(cokieParser());
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/api/cities', citiesRoutes);
 app.use('/api/users', usersRoutes);

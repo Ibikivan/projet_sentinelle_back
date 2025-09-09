@@ -82,13 +82,31 @@ paths:
             default: 20
       responses:
         '200':
-          description: Liste des sujets de prière publics récupérée avec succès.
+          description: Liste des sujets de prière publics récupérée avec succès, avec métadonnées de pagination.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PrayerSubject'
+                type: object
+                properties:
+                  subjects:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PrayerSubject'
+                  pagination:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                        example: 100
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 20
+                      totalPages:
+                        type: integer
+                        example: 5
         '401':
           description: Non autorisé. L'utilisateur doit être connecté.
         '500':
@@ -133,13 +151,31 @@ paths:
             default: 20
       responses:
         '200':
-          description: Liste des sujets de prière de l'utilisateur récupérée avec succès.
+          description: Liste des sujets de prière de l'utilisateur récupérée avec succès, avec métadonnées de pagination.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PrayerSubject'
+                type: object
+                properties:
+                  subjects:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PrayerSubject'
+                  pagination:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                        example: 100
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 20
+                      totalPages:
+                        type: integer
+                        example: 5
         '401':
           description: Non autorisé. L'utilisateur doit être connecté.
         '500':

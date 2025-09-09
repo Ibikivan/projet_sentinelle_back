@@ -49,8 +49,16 @@ async function getAllUsers(params = {}) {
     const page = params.page ? parseInt(params.page, 10) : undefined;
     const offset = limit && page ? (page - 1) * limit : undefined;
 
-    const users = await User.findAll({ where, include, order, limit, offset });
-    return users;
+    const result = await User.findAndCountAll({ where, include, order, limit, offset });
+    return {
+        users: result.rows,
+        pagination: {
+            total: result.count,
+            page: limit ? Math.floor((offset || 0) / limit) + 1 : 1,
+            limit: parseInt(limit, 10) || result.count,
+            totalPages: limit ? Math.ceil(result.count / limit) : 1
+        }
+    };
 }
 
 async function getUserDetails(id) {

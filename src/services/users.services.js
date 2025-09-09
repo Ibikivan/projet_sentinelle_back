@@ -3,19 +3,37 @@ const usersRepository = require('../repositories/users.repositories');
 const authRepository = require('../repositories/auth.repositories');
 const { formatUserPhoneNumber, generateResetCode, formatPhoneNumber } = require('../utils');
 const bcrypt = require('bcrypt');
-const { ValidationError, NotFoundError, ConflictError, GoneError, TooManyRequestsError, AuthentificationError } = require('../utils/errors.classes');
+const {
+    ValidationError,
+    NotFoundError,
+    ConflictError,
+    GoneError,
+    TooManyRequestsError,
+    AuthentificationError
+} = require('../utils/errors.classes');
 const { sendEmailOTP } = require('../utils/email.services');
 
-async function createUser(user) {
+async function createUser(user, file) {
     return await sequelize.transaction(async (transaction) => {
         if (user.password.length < 8) throw new ValidationError('Password must be at least 8 characters');
         
         formatUserPhoneNumber(user);
         const isUserExist = await usersRepository.getUserByPhoneNumber(user.phoneNumber, false);
         if (isUserExist?.deletedAt) throw new GoneError(`${user.phoneNumber}`);        
+        
+        let userData = {
+            phoneNumber: user.phoneNumber,
+            email: user.email,
+            password: await bcrypt.hash(user.password, 10),
+            firstName: user.firstName,
+            lastName: user.lastName,
+            cityId: user.cityId,
+        };
 
-        user.password = await bcrypt.hash(user.password, 10);
-        return usersRepository.createUser(user, transaction)
+        if (file)
+            userData.profilePicture = `/uploads/${file.fieldname}/${file.filename}`;
+
+        return usersRepository.createUser(userData, transaction)
             .catch(err => {
                 if (err.name === 'SequelizeUniqueConstraintError') throw new ConflictError(err.message);
                 throw err;
@@ -31,55 +49,51 @@ async function getAllUsers(params = {}) {
     if (params.limit && parseInt(params.limit, 10) > 100)
         throw new ValidationError('Limit cannot exceed 100');
 
-    const users = await usersRepository.getAllUsers(params);
-    return users;
+    return await usersRepository.getAllUsers(params);
 };
 
 async function getUserDetails(id) {
-    const user = await usersRepository.getUserDetails(id);
-    return user;
+    return await usersRepository.getUserDetails(id);
 };
 
 async function getUserById(id) {
-    const user = await usersRepository.getUserById(id);
-    console.log('Targeted ID', user)
-    return user;
+    return await usersRepository.getUserById(id);
 };
 
-async function updateUser(id, user) {
+async function updateUser(id, user, file) {
     return await sequelize.transaction(async (transaction) => {
         const userExists = await usersRepository.getUserById(id);
         if (!userExists) {
             throw new NotFoundError(`User with ID ${id} not found`);
         }
-        const newUser = {
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            profilePicture: user.profilePicture,
-            cityId: user.cityId,
-        }
-        const updated = await usersRepository.updateUser(id, newUser, transaction);
-        return updated;
+
+        let userData = {};
+        if (user.email) userData.email = user.email;
+        if (user.firstName) userData.firstName = user.firstName;
+        if (user.lastName) userData.lastName = user.lastName;
+        if (user.cityId) userData.cityId = user.cityId;
+        if (file) userData.profilePicture = `/uploads/${file.fieldname}/${file.filename}`;
+
+        return await usersRepository.updateUser(id, userData, transaction);
     });
 };
 
-async function adminUpdateUser(id, user) {
+async function adminUpdateUser(id, user, file) {
     return await sequelize.transaction(async (transaction) => {
         const userExists = await usersRepository.getUserById(id);
         if (!userExists) {
             throw new NotFoundError(`User with ID ${id} not found`);
         }
-        const newUser = {
-            role: user.role,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            profilePicture: user.profilePicture,
-            cityId: user.cityId,
-        }
-        const updated = await usersRepository.updateUser(id, newUser, transaction);
-        return updated;
+
+        let userData = {};
+        if (user.role) userData.role = user.role;
+        if (user.email) userData.email = user.email;
+        if (user.firstName) userData.firstName = user.firstName;
+        if (user.lastName) userData.lastName = user.lastName;
+        if (user.cityId) userData.cityId = user.cityId;
+        if (file) userData.profilePicture = `/uploads/${file.fieldname}/${file.filename}`;
+
+        return await usersRepository.updateUser(id, userData, transaction);
     });
 };
 
@@ -91,8 +105,7 @@ async function deleteUser(id) {
         const newUser = { tokenRevokedBefore: new Date() };
         await usersRepository.updateUser(userExist.id, newUser, transaction);
 
-        const deleted = await usersRepository.deleteUser(id, transaction);
-        return deleted;
+        return await usersRepository.deleteUser(id, transaction);
     });
 };
 
@@ -159,9 +172,7 @@ async function validateAccountRestauration(phoneNumber, otpCode) {
         await authRepository.consumeOtp(otp.id, transaction);
 
         // Resature account
-        const restauredUser = await usersRepository.restoreUser(user.id, transaction);
-
-        return restauredUser;
+        return await usersRepository.restoreUser(user.id, transaction);
     });
 };
 

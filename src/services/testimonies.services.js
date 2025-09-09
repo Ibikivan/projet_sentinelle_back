@@ -4,11 +4,12 @@ const prayersRepository = require("../repositories/prayers.repositories");
 const testimoniesRepository = require("../repositories/testimonies.repositories");
 const { getUserAndSubject } = require("../utils/functions");
 
-async function addTestimony(prayerId, userId, data) {
+async function addTestimony(prayerId, userId, data, file) {
     return await sequelize.transaction(async (transaction) => {
-        if (!data.title && !data.content && !data.voiceContent) {
+        if (!data.title && !data.content && !file)
             throw new ValidationError("Either title, content or voiceContent must be provided.");
-        };
+        if (file)
+            data.voiceContent = `/uploads/${file.fieldname}/${file.filename}`;
 
         const prayer = await prayersRepository.getOneCurrentUserSubject(prayerId, userId);
         if (!prayer) throw new NotFoundError('Failed to find the prayer subject.');
@@ -17,9 +18,6 @@ async function addTestimony(prayerId, userId, data) {
             prayer.state = 'close_exhausted';
             await prayer.save({ transaction });
         };
-
-        // await prayer.createTestimony(data, { transaction });
-        // return { testimonyId: prayer.testimonyId };
 
         const testimony = await testimoniesRepository.createTestimony(data, transaction);
         if (!testimony) throw new NotFoundError("Testimony not founded");
@@ -36,13 +34,15 @@ async function getTestimonyBySubject(subjectId, userId) {
     return testimony;
 };
 
-async function updateTestimony(subjectId, userId, data) {
+async function updateTestimony(subjectId, userId, data, file) {
     return await sequelize.transaction(async (transaction) => {
         const { subject } = await getUserAndSubject(subjectId, userId);
 
         const testimony = await subject.getTestimony();
         if (!testimony) throw new NotFoundError("Testimony not found");
         
+        if (file)
+            data.voiceContent = `/uploads/${file.fieldname}/${file.filename}`;
         await testimony.update(data, { transaction });
         return await testimoniesRepository.getTestimonyById(testimony.id);
     });

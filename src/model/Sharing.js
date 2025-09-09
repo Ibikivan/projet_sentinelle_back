@@ -15,7 +15,6 @@ const Sharing = sequelize.define('Sharing', {
     voiceUrl: {
         type: DataTypes.STRING,
         allowNull: true,
-        validate: { isUrl: true },
     },
     type: {
         type: DataTypes.ENUM('text', 'voice'),
@@ -59,5 +58,11 @@ Sharing.associate = (models) => {
         as: 'subject',
     });
 };
+
+Sharing.prototype.toJSON = function () {
+    const values = Object.assign({}, this.get());
+    values.voiceUrl = process.env.BACKEND_ENDPOINT + values.voiceUrl;
+    return values;
+}
 
 module.exports = Sharing;

@@ -2,13 +2,13 @@ paths:
   /users:
     post:
       summary: Enregistrer un nouvel utilisateur
-      description: Crée un nouvel utilisateur dans la base de données.
+      description: Crée un nouvel utilisateur dans la base de données. Permet l'envoi d'un fichier avatar (profilePicture) via un champ de type fichier.
       tags:
         - Users
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               properties:
@@ -27,12 +27,13 @@ paths:
                 lastName:
                   type: string
                   example: 'Doe'
-                profilePicture:
-                  type: string
-                  example: 'https://example.com/profile.jpg'
                 cityId:
                   type: integer
                   example: 1
+                profilePicture:
+                  type: string
+                  format: binary
+                  description: Fichier image à uploader comme avatar (jpeg, png, jpg, webp)
               required:
                 - phoneNumber
                 - password
@@ -92,7 +93,7 @@ paths:
           description: Inclure les informations minimales de la ville
           schema:
             type: string
-            enum: ['true','false']
+            enum: ['true', 'false']
             default: 'false'
         - name: sortBy
           in: query
@@ -125,13 +126,31 @@ paths:
             default: 20
       responses:
         '200':
-          description: Liste des utilisateurs récupérée avec succès.
+          description: Liste des utilisateurs récupérée avec succès, avec métadonnées de pagination.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User'
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  pagination:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                        example: 100
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 20
+                      totalPages:
+                        type: integer
+                        example: 5
         '401':
           description: Non autorisé. L'utilisateur doit être connecté.
         '500':
@@ -139,7 +158,7 @@ paths:
 
     put:
       summary: Mettre à jour le profil de l'utilisateur connecté
-      description: Met à jour les informations de l'utilisateur actuellement connecté.
+      description: Met à jour les informations de l'utilisateur actuellement connecté. Permet l'envoi d'un fichier avatar (profilePicture) via un champ de type fichier.
       tags:
         - Users
       security:
@@ -147,7 +166,7 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               properties:
@@ -160,12 +179,13 @@ paths:
                 lastName:
                   type: string
                   example: 'Doe'
-                profilePicture:
-                  type: string
-                  example: 'https://example.com/profile.jpg'
                 cityId:
                   type: integer
                   example: 1
+                profilePicture:
+                  type: string
+                  format: binary
+                  description: Fichier image à uploader comme avatar (jpeg, png, jpg, webp)
       responses:
         '200':
           description: Profil mis à jour avec succès.
@@ -260,7 +280,7 @@ paths:
 
     put:
       summary: Mise à jour d'un utilisateur par un administrateur
-      description: Permet à un administrateur de mettre à jour les informations d'un utilisateur spécifique.
+      description: Permet à un administrateur de mettre à jour les informations d'un utilisateur spécifique. Permet l'envoi d'un fichier avatar (profilePicture) via un champ de type fichier.
       tags:
         - Users
       security:
@@ -275,7 +295,7 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               properties:
@@ -292,12 +312,13 @@ paths:
                 lastName:
                   type: string
                   example: 'User'
-                profilePicture:
-                  type: string
-                  example: 'https://example.com/admin.jpg'
                 cityId:
                   type: integer
                   example: 1
+                profilePicture:
+                  type: string
+                  format: binary
+                  description: Fichier image à uploader comme avatar (jpeg, png, jpg, webp)
       responses:
         '200':
           description: Utilisateur mis à jour avec succès.

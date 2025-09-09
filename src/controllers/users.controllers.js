@@ -2,7 +2,7 @@ const { asyncHandler } = require('../middlewares/async-handler.middleware');
 const usersServices = require('../services/users.services');
 
 const registerUser = asyncHandler(async (req, res) => {
-    const user = await usersServices.createUser(req.body);
+    const user = await usersServices.createUser(req.body, req.file);
     res.status(201).json({message: 'User created', user});
 });
 
@@ -33,12 +33,12 @@ const getUserById = asyncHandler(async (req, res) => {
 });
 
 const updateUser = asyncHandler(async (req, res) => {
-    const user = await usersServices.updateUser(req.user.id, req.body);
+    const user = await usersServices.updateUser(req.user.id, req.body, req.file);
     res.status(200).json({message: 'User updated', user});
 });
 
 const adminUpdateUser = asyncHandler(async (req, res) => {
-    const user = await usersServices.adminUpdateUser(req.params.id, req.body);
+    const user = await usersServices.adminUpdateUser(req.params.id, req.body, req.file);
     res.status(200).json({message: 'User updated', user});
 });
 

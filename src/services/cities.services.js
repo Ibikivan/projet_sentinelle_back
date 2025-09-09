@@ -7,16 +7,18 @@ async function addCity(city) {
         const isCityExist = await citiesRepository.getCityByCode(city.fcl); // A remplacer par un identifiant unique de ville
         if (isCityExist)
             throw new ConflictError('City already exists');
-        const newCity = await citiesRepository.createCity(city, transaction);
-        return newCity;
+        return await citiesRepository.createCity(city, transaction);
     })
 }
 
 async function getAllCities(params = {}) {
     if (params.limit && parseInt(params.limit, 10) > 100)
         throw new ConflictError('Limit cannot exceed 100');
-    const cities = await citiesRepository.getAllCities(params);
-    return cities;
+    return await citiesRepository.getAllCities(params);
+}
+
+async function researchCities(params={}) {
+    return await citiesRepository.fullTextResearch(params);
 }
 
 async function getCityById(id) {
@@ -33,8 +35,7 @@ async function updateCity(id, city) {
         if (!existingCity) {
             throw new NotFoundError(`City with ID ${id} not found`);
         }
-        const updatedCity = await citiesRepository.updateCity(id, city);
-        return updatedCity;
+        return await citiesRepository.updateCity(id, city);
     })
 }
 
@@ -44,14 +45,14 @@ async function deleteCity(id) {
         if (!existingCity) {
             throw new NotFoundError(`City with ID ${id} not found`);
         }
-        const deletedCity = await citiesRepository.deleteCity(id);
-        return deletedCity;
+        return await citiesRepository.deleteCity(id);
     })
 }
 
 module.exports = {
     addCity,
     getAllCities,
+    researchCities,
     getCityById,
     updateCity,
     deleteCity,

@@ -143,6 +143,12 @@ const City = sequelize.define('City', {
         type: DataTypes.STRING,
         allowNull: true,
     },
+    searchField: {
+        type: DataTypes.VIRTUAL,
+        get() {
+            return null;
+        }
+    }
 }, {
     tableName: 'cities',
     timestamps: true,

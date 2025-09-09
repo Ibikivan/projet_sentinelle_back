@@ -2,7 +2,7 @@ paths:
   /sharings:
     post:
       summary: Ajouter un partage
-      description: Permet à un utilisateur connecté d'ajouter un partage pour un sujet de prière.
+      description: Permet à un utilisateur connecté d'ajouter un partage pour un sujet de prière. Permet l'envoi d'un fichier audio (voiceUrl) via un champ de type fichier si le type est 'voice'.
       tags:
         - Sharings
       security:
@@ -17,7 +17,7 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               properties:
@@ -26,8 +26,12 @@ paths:
                   example: 'Partage important sur ce sujet de prière'
                 type:
                   type: string
-                  enum: [prayer, encouragement, scripture, testimony]
-                  example: 'encouragement'
+                  enum: [text, voice]
+                  example: 'voice'
+                voiceUrl:
+                  type: string
+                  format: binary
+                  description: Fichier audio à uploader comme partage vocal (mp3, mpeg, wave)
               required:
                 - content
                 - type
@@ -77,7 +81,7 @@ paths:
           description: Inclure les informations minimales du créateur
           schema:
             type: string
-            enum: ['true','false']
+            enum: ['true', 'false']
             default: 'false'
         - name: sortBy
           in: query
@@ -179,7 +183,7 @@ paths:
                   example: 'Partage mis à jour avec plus de détails'
                 type:
                   type: string
-                  enum: [prayer, encouragement, scripture, testimony]
+                  enum: [text, voice]
                   example: 'prayer'
       responses:
         '200':

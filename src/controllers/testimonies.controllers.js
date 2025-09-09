@@ -2,7 +2,7 @@ const { asyncHandler } = require("../middlewares/async-handler.middleware");
 const testimoniesServices = require("../services/testimonies.services");
 
 const addTestimony = asyncHandler(async (req, res) => {
-    const testimony = await testimoniesServices.addTestimony(req.params.subjectId, req.user.id, req.body);
+    const testimony = await testimoniesServices.addTestimony(req.params.subjectId, req.user.id, req.body, req.file);
     res.status(201).json({
         message: 'Testimony added',
         data: testimony
@@ -18,7 +18,7 @@ const getTestimonyBySubject = asyncHandler(async (req, res) => {
 });
 
 const updateTestimony = asyncHandler(async (req, res) => {
-    const testimony = await testimoniesServices.updateTestimony(req.params.subjectId, req.user.id, req.body);
+    const testimony = await testimoniesServices.updateTestimony(req.params.subjectId, req.user.id, req.body, req.file);
     res.status(200).json({
         message: 'Testimony updated',
         data: testimony

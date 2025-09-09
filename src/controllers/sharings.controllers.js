@@ -3,7 +3,7 @@ const sharingsService = require("../services/sharings.services");
 
 const addSharing = asyncHandler(async (req, res) => {
     const { subjectId } = req.query;
-    const sharing = await sharingsService.addSharing(subjectId, req.user.id, req.body);
+    const sharing = await sharingsService.addSharing(subjectId, req.user.id, req.body, req.file);
     res.status(201).json({
         message: "Sharing added",
         data: sharing

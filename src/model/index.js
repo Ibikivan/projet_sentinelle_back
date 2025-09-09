@@ -37,7 +37,7 @@ async function testDBConnexion() {
 
 async function syncDB() {
     try {
-        await sequelize.sync({ alter: true });
+        await sequelize.sync();
         console.log('Database synchronized.');
     } catch (error) {
         throw new ServiceUnavailableError('Unable to synchronize the database');
