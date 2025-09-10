@@ -35,7 +35,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: City created successfully
+                    example: City created
                   city:
                     $ref: '#/components/schemas/City'
         '400':
@@ -47,20 +47,114 @@ paths:
 
     get:
       summary: Récupérer toutes les villes
-      description: Retourne une liste de toutes les villes disponibles dans la base de données.
+      description: Retourne une liste de toutes les villes disponibles dans la base de données, avec filtres, tri et pagination.
       tags:
         - Cities
+      parameters:
+        - name: name
+          in: query
+          description: Filtrer par nom exact de ville
+          schema:
+            type: string
+        - name: countryCode
+          in: query
+          description: Filtrer par code pays (ISO 3166-1 alpha-2)
+          schema:
+            type: string
+            example: FR
+        - name: countryName
+          in: query
+          description: Filtrer par nom de pays
+          schema:
+            type: string
+        - name: continent
+          in: query
+          description: Filtrer par code continent
+          schema:
+            type: string
+            example: EU
+        - name: continentName
+          in: query
+          description: Filtrer par nom de continent
+          schema:
+            type: string
+        - name: q
+          in: query
+          description: Recherche textuelle (ville, région administrative ou pays)
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          description: Champ de tri
+          schema:
+            type: string
+            enum: [createdAt, name, population, countryCode]
+            default: createdAt
+        - name: sortOrder
+          in: query
+          description: Ordre de tri
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: page
+          in: query
+          description: Numéro de page (à partir de 1)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Nombre d'éléments par page (max 100)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
       responses:
         '200':
           description: Liste des villes récupérée avec succès.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/City'
+                type: object
+                properties:
+                  cities:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/City'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
         '500':
           description: Erreur interne du serveur.
+
+
+  /cities/search:
+    get:
+      summary: Recherche de villes (plein texte)
+      description: Retourne une liste de villes correspondant au mot-clé fourni, classées par pertinence. La réponse peut inclure un score de pertinence et un extrait contextuel.
+      tags:
+        - Cities
+      parameters:
+        - name: keyword
+          in: query
+          required: true
+          description: Mot-clé de recherche (ex. "Paris", "Douala")
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Résultats de la recherche récupérés avec succès.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CitySearchResult'
+        '500':
+          description: Erreur interne du serveur.
+
 
   /cities/{id}:
     get:
@@ -125,7 +219,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: City updated successfully
+                    example: City updated
                   city:
                     $ref: '#/components/schemas/City'
         '404':
@@ -157,7 +251,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: City deleted successfully
+                    example: City deleted
         '404':
           description: Ville non trouvée.
         '500':
@@ -188,6 +282,38 @@ components:
           type: string
           format: date-time
           example: 2025-05-04T12:34:56Z
+
+    CitySearchResult:
+      description: Résultat de recherche pour une ville, incluant des métadonnées de pertinence.
+      allOf:
+        - $ref: '#/components/schemas/City'
+        - type: object
+          properties:
+            rank:
+              type: number
+              format: float
+              description: Score de pertinence de la recherche.
+              example: 0.42
+            excerpt:
+              type: string
+              description: Extrait textuel avec mise en évidence des correspondances.
+              example: "France — <b>Paris</b> est la capitale..."
+
+    Pagination:
+      type: object
+      properties:
+        total:
+          type: integer
+          description: Nombre total d'éléments correspondant au filtre
+        page:
+          type: integer
+          description: Numéro de la page courante
+        limit:
+          type: integer
+          description: Nombre d'éléments par page
+        totalPages:
+          type: integer
+          description: Nombre total de pages
 
 securitySchemes:
   cookieAuth:

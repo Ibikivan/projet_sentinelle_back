@@ -1,15 +1,21 @@
+const envVarTest = require('./src/config/env-config');
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
 const swaggerUi = require('swagger-ui-express');
 const specs = require('./src/docs/swagger');
 const cokieParser = require('cookie-parser');
 const { testDBConnexion, syncDB } = require('./src/model');
-const errorHandler = require('./src/middlewares/error.handler');
+const errorHandler = require('./src/middlewares/error-handler.middleware');
 const citiesRoutes = require('./src/routes/cities.routes');
 const usersRoutes = require('./src/routes/users.routes');
 const authRoutes = require('./src/routes/auth.routes');
+const prayerRoutes = require('./src/routes/prayers.routes');
+const testimonyRoutes = require('./src/routes/testimonies.routes');
+const sharingRoutes = require('./src/routes/sharings.routes');
+const sessionsRoutes = require('./src/routes/sessions.routes');
+const path = require('path');
 
+envVarTest()
 testDBConnexion()
 syncDB()
 
@@ -24,19 +30,23 @@ app.use(cors({
 }));
 
 app.use(express.json());
-
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(specs, null, {
-    swaggerOptions: {
-        withCredentials: true
-    }
-}));
-
 app.use(cokieParser());
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/api/cities', citiesRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/subjects', prayerRoutes);
+app.use('/api/testimonies', testimonyRoutes);
+app.use('/api/sharings', sharingRoutes);
+app.use('/api/prayer-session', sessionsRoutes);
 
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(specs, null, {
+    swaggerOptions: { withCredentials: true }
+}));
+
+app.use((req, res) => res.status(404).json({ code: 'NOT_FOUND', message: 'Route inconnue' }));
 app.use(errorHandler);
 
 module.exports = app;

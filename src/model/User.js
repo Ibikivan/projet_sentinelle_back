@@ -1,7 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const bcrypt = require('bcrypt');
-const City = require('./City');
 
 const User = sequelize.define('User', {
     id: {
@@ -24,10 +22,11 @@ const User = sequelize.define('User', {
         type: DataTypes.ENUM('USER', 'ADMIN', 'SUPER_ADMIN'),
         allowNull: false,
         defaultValue: 'USER',
+        validate: { isIn: [['USER', 'ADMIN', 'SUPER_ADMIN']] }
     },
     email: {
         type: DataTypes.STRING,
-        allowNull: true,
+        allowNull: false,
         validate: {
             isEmail: true,
         },
@@ -35,30 +34,22 @@ const User = sequelize.define('User', {
     },
     password: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
+        validate: { len: { args: [8, 100], msg: 'Password must be between 8 and 100 characters long' } },
     },
     firstName: {
         type: DataTypes.STRING,
         allowNull: false,
+        validate: { len: [1, 100] },
     },
     lastName: {
         type: DataTypes.STRING,
         allowNull: false,
+        validate: { len: [1, 100] },
     },
     profilePicture: {
         type: DataTypes.STRING,
         allowNull: true,
-        validate: {
-            isUrl: true,
-        },
-    },
-    cityId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: City,
-            key: 'id',
-        },
     },
     tokenRevokedBefore: {
         type: DataTypes.DATE,
@@ -67,20 +58,60 @@ const User = sequelize.define('User', {
 }, {
     tableName: 'users',
     timestamps: true,
-    instanceMethods: {
-        async hashOtp(otp) {
-            this.otpHash = await bcrypt.hash(otp, 10);
-            this.otpExpireAt = new Date(Date.now() + 10 * 60 * 1000); // OTP valid for 10 minutes
-            await this.save();
-        }
-    },
     paranoid: true,
+    underscored: true,
+    indexes: [
+        { fields: ['phone_number'] },
+        { fields: ['email'] },
+        { fields: ['token_revoked_before'] },
+    ]
 })
+
+User.associate = (models) => {
+    User.hasMany(models.Community, {
+        foreignKey: 'userId',
+        as: 'communities',
+    });
+
+    User.hasMany(models.PrayerCrew, {
+        foreignKey: 'userId',
+        as: 'prayerCrews',
+    });
+
+    User.hasMany(models.PrayerSubject, {
+        foreignKey: 'userId',
+        as: 'prayerSubjects',
+    });
+
+    User.hasMany(models.Sharing, {
+        foreignKey: 'userId',
+        as: 'sharings',
+    });
+
+    User.hasMany(models.Otp, {
+        foreignKey: 'userId',
+        as: 'otps',
+    });
+
+    // Opimisation possible en ne rajoutant que l'info de la city dont on a besoin,
+    // sans associaion à la table
+    User.belongsTo(models.City, {
+        foreignKey: 'cityId',
+        as: 'city',
+    });
+
+    User.hasMany(models.PrayerSession, {
+        foreignKey: 'userId',
+        as: 'location'
+    });
+};
 
 User.prototype.toJSON = function () {
     const values = Object.assign({}, this.get());
     delete values.password;
+    delete values.tokenRevokedBefore;
+    values.profilePicture = process.env.BACKEND_ENDPOINT + values.profilePicture
     return values;
-}
+};
 
 module.exports = User;

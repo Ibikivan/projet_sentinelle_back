@@ -14,10 +14,10 @@ paths:
               properties:
                 phoneNumber:
                   type: string
-                  example: "+237612345678"
+                  example: '+237612345678'
                 password:
                   type: string
-                  example: "Password123!"
+                  example: 'Password123!'
               required:
                 - phoneNumber
                 - password
@@ -34,7 +34,7 @@ paths:
                     example: Login successful
                   token:
                     type: string
-                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
         '400':
           description: Erreur de validation ou informations incorrectes.
         '401':
@@ -59,7 +59,7 @@ paths:
               properties:
                 newPhoneNumber:
                   type: string
-                  example: "+237698765432"
+                  example: '+237698765432'
               required:
                 - newPhoneNumber
       responses:
@@ -72,7 +72,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: OTP sent successfully
+                    example: OTP sent
                   otp:
                     $ref: '#/components/schemas/Otp'
         '400':
@@ -99,7 +99,7 @@ paths:
               properties:
                 otpCode:
                   type: string
-                  example: "123456"
+                  example: '123456'
               required:
                 - otpCode
       responses:
@@ -143,10 +143,10 @@ paths:
               properties:
                 oldPassword:
                   type: string
-                  example: "OldPassword123!"
+                  example: 'OldPassword123!'
                 newPassword:
                   type: string
-                  example: "NewPassword123!"
+                  example: 'NewPassword123!'
               required:
                 - oldPassword
                 - newPassword
@@ -183,7 +183,7 @@ paths:
               properties:
                 phoneNumber:
                   type: string
-                  example: "+237612345678"
+                  example: '+237612345678'
               required:
                 - phoneNumber
       responses:
@@ -196,7 +196,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: OTP sent successfully
+                    example: OTP sent
                   otp:
                     $ref: '#/components/schemas/Otp'
         '400':
@@ -221,10 +221,10 @@ paths:
               properties:
                 phoneNumber:
                   type: string
-                  example: "+237612345678"
+                  example: '+237612345678'
                 otpCode:
                   type: string
-                  example: "123456"
+                  example: '123456'
               required:
                 - phoneNumber
                 - otpCode
@@ -238,7 +238,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: OTP verified successfully
+                    example: OTP verified
         '400':
           description: Format OTP invalide.
         '404':
@@ -268,7 +268,7 @@ paths:
                   example: 1
                 newPassword:
                   type: string
-                  example: "NewPassword123!"
+                  example: 'NewPassword123!'
               required:
                 - otpId
                 - newPassword
@@ -282,7 +282,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: Password reset successfully
+                    example: Password reset
         '400':
           description: Erreur de validation ou mot de passe invalide.
         '404':
@@ -310,7 +310,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: User successfully logged out
+                    example: User logged out
         '401':
           description: Non autorisé. L'utilisateur doit être connecté.
         '500':
@@ -329,18 +329,18 @@ components:
           example: 42
         type:
           type: string
-          enum: [PASSWORD_RESET, PHONE_CHANGE, RESTAURE_ACCOUNT]
+          enum: [PASSWORD_RESET, PHONE_CHANGE, RESTORE_ACCOUNT]
           example: PHONE_CHANGE
         newValue:
           type: string
-          example: "+237612345678"
+          example: '+237612345678'
         otpHash:
           type: string
-          example: "$2b$10$hashedOtpValue"
+          example: '$2b$10$hashedOtpValue'
         expiresAt:
           type: string
           format: date-time
-          example: "2025-05-04T12:34:56Z"
+          example: '2025-05-04T12:34:56Z'
         attempts:
           type: integer
           example: 0
@@ -350,10 +350,10 @@ components:
         verifiedAt:
           type: string
           format: date-time
-          example: "2025-05-04T13:00:00Z"
+          example: '2025-05-04T13:00:00Z'
         ip:
           type: string
-          example: "192.168.1.1"
+          example: '192.168.1.1'
 
 securitySchemes:
   cookieAuth:

@@ -2,37 +2,38 @@ paths:
   /users:
     post:
       summary: Enregistrer un nouvel utilisateur
-      description: Crée un nouvel utilisateur dans la base de données.
+      description: Crée un nouvel utilisateur dans la base de données. Permet l'envoi d'un fichier avatar (profilePicture) via un champ de type fichier.
       tags:
         - Users
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               properties:
                 phoneNumber:
                   type: string
-                  example: "+237612345678"
+                  example: '+237612345678'
                 email:
                   type: string
-                  example: "user@example.com"
+                  example: 'user@example.com'
                 password:
                   type: string
-                  example: "Password123!"
+                  example: 'Password123!'
                 firstName:
                   type: string
-                  example: "John"
+                  example: 'John'
                 lastName:
                   type: string
-                  example: "Doe"
-                profilePicture:
-                  type: string
-                  example: "https://example.com/profile.jpg"
+                  example: 'Doe'
                 cityId:
                   type: integer
                   example: 1
+                profilePicture:
+                  type: string
+                  format: binary
+                  description: Fichier image à uploader comme avatar (jpeg, png, jpg, webp)
               required:
                 - phoneNumber
                 - password
@@ -49,7 +50,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: User created successfully
+                    example: User created
                   user:
                     $ref: '#/components/schemas/User'
         '400':
@@ -64,15 +65,92 @@ paths:
         - Users
       security:
         - cookieAuth: []
+      parameters:
+        - name: role
+          in: query
+          description: Filtrer par rôle utilisateur
+          schema:
+            type: string
+            enum: [USER, ADMIN, SUPER_ADMIN]
+        - name: cityId
+          in: query
+          description: Filtrer par identifiant de ville
+          schema:
+            type: integer
+        - name: email
+          in: query
+          description: Filtrer par email exact
+          schema:
+            type: string
+            format: email
+        - name: q
+          in: query
+          description: Recherche textuelle (nom, prénom ou email)
+          schema:
+            type: string
+        - name: includeCity
+          in: query
+          description: Inclure les informations minimales de la ville
+          schema:
+            type: string
+            enum: ['true', 'false']
+            default: 'false'
+        - name: sortBy
+          in: query
+          description: Champ de tri
+          schema:
+            type: string
+            enum: [createdAt, lastName, firstName, role, cityId]
+            default: createdAt
+        - name: sortOrder
+          in: query
+          description: Ordre de tri
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: page
+          in: query
+          description: Numéro de page (à partir de 1)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Nombre d'éléments par page (max 100)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
       responses:
         '200':
-          description: Liste des utilisateurs récupérée avec succès.
+          description: Liste des utilisateurs récupérée avec succès, avec métadonnées de pagination.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User'
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  pagination:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                        example: 100
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 20
+                      totalPages:
+                        type: integer
+                        example: 5
         '401':
           description: Non autorisé. L'utilisateur doit être connecté.
         '500':
@@ -80,7 +158,7 @@ paths:
 
     put:
       summary: Mettre à jour le profil de l'utilisateur connecté
-      description: Met à jour les informations de l'utilisateur actuellement connecté.
+      description: Met à jour les informations de l'utilisateur actuellement connecté. Permet l'envoi d'un fichier avatar (profilePicture) via un champ de type fichier.
       tags:
         - Users
       security:
@@ -88,25 +166,26 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               properties:
                 email:
                   type: string
-                  example: "user@example.com"
+                  example: 'user@example.com'
                 firstName:
                   type: string
-                  example: "John"
+                  example: 'John'
                 lastName:
                   type: string
-                  example: "Doe"
-                profilePicture:
-                  type: string
-                  example: "https://example.com/profile.jpg"
+                  example: 'Doe'
                 cityId:
                   type: integer
                   example: 1
+                profilePicture:
+                  type: string
+                  format: binary
+                  description: Fichier image à uploader comme avatar (jpeg, png, jpg, webp)
       responses:
         '200':
           description: Profil mis à jour avec succès.
@@ -117,7 +196,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: User updated successfully
+                    example: User updated
                   user:
                     $ref: '#/components/schemas/User'
         '401':
@@ -144,7 +223,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: Profile deleted successfully
+                    example: Profile deleted
         '401':
           description: Non autorisé. L'utilisateur doit être connecté.
         '500':
@@ -201,7 +280,7 @@ paths:
 
     put:
       summary: Mise à jour d'un utilisateur par un administrateur
-      description: Permet à un administrateur de mettre à jour les informations d'un utilisateur spécifique.
+      description: Permet à un administrateur de mettre à jour les informations d'un utilisateur spécifique. Permet l'envoi d'un fichier avatar (profilePicture) via un champ de type fichier.
       tags:
         - Users
       security:
@@ -216,7 +295,7 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               properties:
@@ -226,19 +305,20 @@ paths:
                   example: ADMIN
                 email:
                   type: string
-                  example: "admin@example.com"
+                  example: 'admin@example.com'
                 firstName:
                   type: string
-                  example: "Admin"
+                  example: 'Admin'
                 lastName:
                   type: string
-                  example: "User"
-                profilePicture:
-                  type: string
-                  example: "https://example.com/admin.jpg"
+                  example: 'User'
                 cityId:
                   type: integer
                   example: 1
+                profilePicture:
+                  type: string
+                  format: binary
+                  description: Fichier image à uploader comme avatar (jpeg, png, jpg, webp)
       responses:
         '200':
           description: Utilisateur mis à jour avec succès.
@@ -249,7 +329,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: User updated successfully
+                    example: User updated
                   user:
                     $ref: '#/components/schemas/User'
         '401':
@@ -285,7 +365,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: User deleted successfully
+                    example: User deleted
         '401':
           description: Non autorisé. L'utilisateur doit être connecté.
         '403':
@@ -310,7 +390,7 @@ paths:
               properties:
                 phoneNumber:
                   type: string
-                  example: "+237612345678"
+                  example: '+237612345678'
               required:
                 - phoneNumber
       responses:
@@ -323,7 +403,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: OTP sent successfully
+                    example: OTP sent
                   otp:
                     $ref: '#/components/schemas/Otp'
         '400':
@@ -350,10 +430,10 @@ paths:
               properties:
                 phoneNumber:
                   type: string
-                  example: "+237612345678"
+                  example: '+237612345678'
                 otpCode:
                   type: string
-                  example: "123456"
+                  example: '123456'
               required:
                 - phoneNumber
                 - otpCode
@@ -367,7 +447,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: Account restored successfully
+                    example: Account restored
                   user:
                     $ref: '#/components/schemas/User'
         '400':
@@ -391,19 +471,19 @@ components:
           example: 1
         phoneNumber:
           type: string
-          example: "+237612345678"
+          example: '+237612345678'
         email:
           type: string
-          example: "user@example.com"
+          example: 'user@example.com'
         firstName:
           type: string
-          example: "John"
+          example: 'John'
         lastName:
           type: string
-          example: "Doe"
+          example: 'Doe'
         profilePicture:
           type: string
-          example: "https://example.com/profile.jpg"
+          example: 'https://example.com/profile.jpg'
         cityId:
           type: integer
           example: 1
@@ -414,15 +494,15 @@ components:
         tokenRevokedBefore:
           type: string
           format: date-time
-          example: "2025-05-04T12:34:56Z"
+          example: '2025-05-04T12:34:56Z'
         createdAt:
           type: string
           format: date-time
-          example: "2025-05-04T12:34:56Z"
+          example: '2025-05-04T12:34:56Z'
         updatedAt:
           type: string
           format: date-time
-          example: "2025-05-04T12:34:56Z"
+          example: '2025-05-04T12:34:56Z'
 
 securitySchemes:
   cookieAuth:

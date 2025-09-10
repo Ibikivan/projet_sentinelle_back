@@ -1,0 +1,584 @@
+paths:
+  /subjects:
+    post:
+      summary: Créer un sujet de prière
+      description: Permet à un utilisateur connecté de créer un nouveau sujet de prière.
+      tags:
+        - Prayer Subjects
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: 'Sujet de prière important'
+                description:
+                  type: string
+                  example: 'Description détaillée du sujet de prière'
+                isPublic:
+                  type: boolean
+                  example: true
+                category:
+                  type: string
+                  example: 'Santé'
+              required:
+                - title
+                - description
+      responses:
+        '201':
+          description: Sujet de prière créé avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrayerSubject'
+        '400':
+          description: Erreur de validation des données.
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '500':
+          description: Erreur interne du serveur.
+
+  /subjects/publics:
+    get:
+      summary: Récupérer tous les sujets de prière publics
+      description: Récupère la liste de tous les sujets de prière publics, avec filtres, tri et pagination.
+      tags:
+        - Prayer Subjects
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: state
+          in: query
+          description: Filtrer par état du sujet
+          schema:
+            type: string
+            enum: [active, close_exhausted, close_expired]
+        - name: order
+          in: query
+          description: Ordre de tri sur createdAt
+          schema:
+            type: string
+            enum: [ASC, DESC]
+            default: DESC
+        - name: page
+          in: query
+          description: Numéro de page (à partir de 1)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Nombre d'éléments par page (max 100)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Liste des sujets de prière publics récupérée avec succès, avec métadonnées de pagination.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subjects:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PrayerSubject'
+                  pagination:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                        example: 100
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 20
+                      totalPages:
+                        type: integer
+                        example: 5
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '500':
+          description: Erreur interne du serveur.
+
+  /subjects/me/all:
+    get:
+      summary: Récupérer tous les sujets de prière de l'utilisateur connecté
+      description: Récupère la liste de tous les sujets de prière créés par l'utilisateur connecté, avec filtres, tri et pagination.
+      tags:
+        - Prayer Subjects
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: state
+          in: query
+          description: Filtrer par état du sujet
+          schema:
+            type: string
+            enum: [active, close_exhausted, close_expired]
+        - name: order
+          in: query
+          description: Ordre de tri sur createdAt
+          schema:
+            type: string
+            enum: [ASC, DESC]
+            default: DESC
+        - name: page
+          in: query
+          description: Numéro de page (à partir de 1)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Nombre d'éléments par page (max 100)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Liste des sujets de prière de l'utilisateur récupérée avec succès, avec métadonnées de pagination.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subjects:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PrayerSubject'
+                  pagination:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                        example: 100
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 20
+                      totalPages:
+                        type: integer
+                        example: 5
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '500':
+          description: Erreur interne du serveur.
+
+  /subjects/{id}:
+    get:
+      summary: Récupérer un sujet de prière public
+      description: Récupère un sujet de prière public par son ID.
+      tags:
+        - Prayer Subjects
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID du sujet de prière
+      responses:
+        '200':
+          description: Sujet de prière récupéré avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrayerSubject'
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '404':
+          description: Sujet de prière non trouvé.
+        '500':
+          description: Erreur interne du serveur.
+
+  /subjects/{id}/me:
+    get:
+      summary: Récupérer un sujet de prière spécifique de l'utilisateur connecté
+      description: Récupère un sujet de prière spécifique créé par l'utilisateur connecté.
+      tags:
+        - Prayer Subjects
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID du sujet de prière
+      responses:
+        '200':
+          description: Sujet de prière récupéré avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrayerSubject'
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '404':
+          description: Sujet de prière non trouvé.
+        '500':
+          description: Erreur interne du serveur.
+
+    put:
+      summary: Mettre à jour un sujet de prière de l'utilisateur connecté
+      description: Permet à l'utilisateur connecté de mettre à jour un de ses sujets de prière.
+      tags:
+        - Prayer Subjects
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID du sujet de prière
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: 'Titre mis à jour'
+                description:
+                  type: string
+                  example: 'Description mise à jour'
+                isPublic:
+                  type: boolean
+                  example: false
+                category:
+                  type: string
+                  example: 'Famille'
+      responses:
+        '200':
+          description: Sujet de prière mis à jour avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrayerSubject'
+        '400':
+          description: Erreur de validation des données.
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '404':
+          description: Sujet de prière non trouvé.
+        '500':
+          description: Erreur interne du serveur.
+
+    delete:
+      summary: Supprimer un sujet de prière de l'utilisateur connecté
+      description: Permet à l'utilisateur connecté de supprimer un de ses sujets de prière.
+      tags:
+        - Prayer Subjects
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID du sujet de prière
+      responses:
+        '200':
+          description: Sujet de prière supprimé avec succès.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Sujet de prière supprimé avec succès'
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '404':
+          description: Sujet de prière non trouvé.
+        '500':
+          description: Erreur interne du serveur.
+
+  /subjects/{id}/visibility/{visibility}:
+    patch:
+      summary: Mettre à jour la visibilité d'un sujet de prière
+      description: Permet à l'utilisateur connecté de modifier la visibilité de son sujet de prière.
+      tags:
+        - Prayer Subjects
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID du sujet de prière
+        - name: visibility
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [public, private]
+          description: Nouvelle visibilité du sujet
+      responses:
+        '200':
+          description: Visibilité mise à jour avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrayerSubject'
+        '400':
+          description: Erreur de validation des données.
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '404':
+          description: Sujet de prière non trouvé.
+        '500':
+          description: Erreur interne du serveur.
+
+  /subjects/{id}/state/{state}:
+    patch:
+      summary: Mettre à jour l'état d'un sujet de prière
+      description: Permet à l'utilisateur connecté de modifier l'état de son sujet de prière.
+      tags:
+        - Prayer Subjects
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID du sujet de prière
+        - name: state
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [active, close_exhausted, close_expired]
+          description: Nouvel état du sujet
+      responses:
+        '200':
+          description: État mis à jour avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrayerSubject'
+        '400':
+          description: Erreur de validation des données.
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '404':
+          description: Sujet de prière non trouvé.
+        '500':
+          description: Erreur interne du serveur.
+
+  /subjects/{id}/testimony/{action}:
+    patch:
+      summary: Gérer les témoignages d'un sujet de prière
+      description: Permet à l'utilisateur connecté de gérer les témoignages de son sujet de prière.
+      tags:
+        - Prayer Subjects
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID du sujet de prière
+        - name: action
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [add, remove]
+          description: Action à effectuer sur le témoignage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                testimonyId:
+                  type: integer
+                  example: 1
+      responses:
+        '200':
+          description: Témoignage géré avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Testimony'
+        '400':
+          description: Erreur de validation des données.
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '404':
+          description: Sujet de prière non trouvé.
+        '500':
+          description: Erreur interne du serveur.
+
+  /subjects/{id}/crew/{action}:
+    patch:
+      summary: Gérer l'équipe de prière d'un sujet
+      description: Permet à l'utilisateur connecté de gérer l'équipe de prière de son sujet.
+      tags:
+        - Prayer Subjects
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID du sujet de prière
+        - name: action
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [add, remove]
+          description: Action à effectuer sur l'équipe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prayerCrewId:
+                  type: integer
+                  example: 1
+      responses:
+        '200':
+          description: Équipe gérée avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrayerCrew'
+        '400':
+          description: Erreur de validation des données.
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '404':
+          description: Sujet de prière non trouvé.
+        '500':
+          description: Erreur interne du serveur.
+
+  /subjects/{id}/community/{action}:
+    patch:
+      summary: Gérer la communauté d'un sujet de prière
+      description: Permet à l'utilisateur connecté de gérer la communauté de son sujet de prière.
+      tags:
+        - Prayer Subjects
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID du sujet de prière
+        - name: action
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [add, remove]
+          description: Action à effectuer sur la communauté
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                communityId:
+                  type: integer
+                  example: 1
+      responses:
+        '200':
+          description: Communauté gérée avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Community'
+        '400':
+          description: Erreur de validation des données.
+        '401':
+          description: Non autorisé. L'utilisateur doit être connecté.
+        '404':
+          description: Sujet de prière non trouvé.
+        '500':
+          description: Erreur interne du serveur.
+
+components:
+  schemas:
+    Community:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: 'Communauté de prière'
+        description:
+          type: string
+          example: 'Description de la communauté'
+        createdAt:
+          type: string
+          format: date-time
+          example: '2025-05-04T12:34:56Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2025-05-05T09:12:30Z'
+    PrayerCrew:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: 'Équipe de prière'
+        description:
+          type: string
+          example: 'Description du groupe de prière'
+        createdAt:
+          type: string
+          format: date-time
+          example: '2025-05-04T12:34:56Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2025-05-05T09:12:30Z'

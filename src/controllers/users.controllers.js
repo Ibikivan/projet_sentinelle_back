@@ -1,122 +1,73 @@
+const { asyncHandler } = require('../middlewares/async-handler.middleware');
 const usersServices = require('../services/users.services');
 
-async function registerUser(req, res, next) {
-    try {
-        const user = await usersServices.createUser(req.body);
-        res.status(201).json({message: 'User created successfully', user});
-    } catch (error) {
-        console.error('Error creating user:', error);
-        next(error);
-    }
-}
+const registerUser = asyncHandler(async (req, res) => {
+    const user = await usersServices.createUser(req.body, req.file);
+    res.status(201).json({message: 'User created', user});
+});
 
-async function getAllUsers(req, res, next) {
-    try {
-        const users = await usersServices.getAllUsers();
-        res.status(200).json(users);
-    } catch (error) {
-        console.error('Error fetching users:', error);
-        next(error);
-    }
-}
+const getAllUsers = asyncHandler(async (req, res) => {
+    const users = await usersServices.getAllUsers(req.query);
+    res.status(200).json(users);
+});
 
-async function getUserDetails(req, res, next) {
-    try {
-        const user = await usersServices.getUserDetails(req.user.id);
-        res.status(200).json(user);
-    } catch (error) {
-        console.error('Error fetching user:', error);
-        next(error);
-    }
-}
+const getUserDetails = asyncHandler(async (req, res) => {
+    const user = await usersServices.getUserDetails(req.user.id);
+    res.status(200).json(user);
+});
 
-async function deleteProfile(req, res, next) {
-    try {
-        const user = await usersServices.deleteUser(req.user.id);
-        res.clearCookie('session', {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            path: '/api'
-        });
-        res.status(200).json({message: 'Profile deleted successfully', user});
-    } catch (error) {
-        console.error('Error deleting user:', error);
-        next(error);
-    }
-}
+const deleteProfile = asyncHandler(async (req, res) => {
+    const user = await usersServices.deleteUser(req.user.id);
+    res.clearCookie('session', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/api'
+    });
+    res.sendStatus(204);
+});
 
-async function getUserById(req, res, next) {
-    try {
-        const user = await usersServices.getUserById(req.params.id);
-        res.status(200).json(user);
-    } catch (error) {
-        console.error('Error fetching user:', error);
-        next(error);
-    }
-}
+const getUserById = asyncHandler(async (req, res) => {
+    const user = await usersServices.getUserById(req.params.id);
+    res.status(200).json(user);
+});
 
-async function updateUser(req, res, next) {
-    try {
-        const user = await usersServices.updateUser(req.user.id, req.body);
-        res.status(200).json({message: 'User updated successfully', user});
-    } catch (error) {
-        console.error('Error updating user:', error);
-        next(error);
-    }
-}
+const updateUser = asyncHandler(async (req, res) => {
+    const user = await usersServices.updateUser(req.user.id, req.body, req.file);
+    res.status(200).json({message: 'User updated', user});
+});
 
-async function adminUpdateUser(req, res, next) {
-    try {
-        const user = await usersServices.adminUpdateUser(req.params.id, req.body);
-        res.status(200).json({message: 'User updated successfully', user});
-    } catch (error) {
-        console.error('Error updating user:', error);
-        next(error);
-    }
-}
+const adminUpdateUser = asyncHandler(async (req, res) => {
+    const user = await usersServices.adminUpdateUser(req.params.id, req.body, req.file);
+    res.status(200).json({message: 'User updated', user});
+});
 
-async function deleteUser(req, res, next) {
-    try {
-        const user = await usersServices.deleteUser(req.params.id);
-        res.clearCookie('session', {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            path: '/api'
-        });
-        res.status(200).json({message: 'User deleted successfully', user});
-    } catch (error) {
-        console.error('Error deleting user:', error);
-        next(error);
-    }
-}
+const deleteUser = asyncHandler(async (req, res) => {
+    const user = await usersServices.deleteUser(req.params.id);
+    res.clearCookie('session', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/api'
+    });
+    res.sendStatus(204);
+});
 
-async function requestToRestoreUser(req, res, next) {
-    try {
-        const { phoneNumber } = req.body;
-        if (!phoneNumber) return res.status(400).json({ message: 'New phone number is required' });
+const requestToRestoreUser = asyncHandler(async (req, res) => {
+    const { phoneNumber } = req.body;
+    if (!phoneNumber) return res.status(400).json({ message: 'New phone number is required' });
 
-        const otp = await usersServices.requestToRestaureAccount(phoneNumber, req.ip);
-        res.status(200).json({message: 'OTP sent successfully', otp});
-    } catch (error) {
-        console.error('Error during OTP request:', error);
-        next(error);
-    }
-}
+    const otp = await usersServices.requestToRestaureAccount(phoneNumber, req.ip);
+    res.status(200).json({message: 'OTP sent', otp});
+});
 
-async function verifyRestaurationOtp(req, res, next) {
-    try {
-        const { phoneNumber, otpCode } = req.body;
-        if (!phoneNumber || !otpCode) res.status(400).json({ message: "Requester's phone number and otp code are required" });
+const verifyRestaurationOtp = asyncHandler(async (req, res) => {
+    const { phoneNumber, otpCode } = req.body;
+    if (!phoneNumber || !otpCode) res.status(400).json({ message: "Requester's phone number and otp code are required" });
 
-        const user = await usersServices.validateAccountRestauration(phoneNumber, otpCode);
-        res.status(200).json({message: 'Account restaured successfully', user});
-    } catch (error) {
-        console.error('Error during verification or restauration:', error);
-        next(error);
-    }
-}
+    const user = await usersServices.validateAccountRestauration(phoneNumber, otpCode);
+    res.status(200).json({message: 'Account restaured', user});
+});
 
 module.exports = {
     registerUser,
