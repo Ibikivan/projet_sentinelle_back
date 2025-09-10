@@ -50,12 +50,12 @@ function createUpload({ folder, allowedTypes, multiple=false, maxCount=5 }) {
         handler(req, res, (err) => {
             if (err instanceof multer.MulterError) {
                 if (err.code === 'LIMIT_FILE_SIZE')
-                    return new ValidationError(`Max file size on ${maxFileSize}Mo exceded`);
+                    return next(new ValidationError(`Max file size on ${maxFileSize}Mo exceded`));
                 if (err.code === 'LIMIT_UNEXPECTED_FILE')
-                    return new ValidationError(`Too many files sended`);
-                return new ValidationError(`Upload error: ${err?.message}`);
+                    return next(new ValidationError(`Too many files sended`));
+                return next(new ValidationError(`Upload error: ${err?.message}`));
             } else if (err) {
-                return new ValidationError(err?.message);
+                return next(new ValidationError(err?.message));
             }
             next();
         });

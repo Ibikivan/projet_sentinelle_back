@@ -416,7 +416,7 @@ paths:
           required: true
           schema:
             type: string
-            enum: [add, remove, update]
+            enum: [add, remove]
           description: Action à effectuer sur le témoignage
       requestBody:
         required: true
@@ -425,14 +425,9 @@ paths:
             schema:
               type: object
               properties:
-                content:
-                  type: string
-                  example: 'Contenu du témoignage'
-                rating:
+                testimonyId:
                   type: integer
-                  minimum: 1
-                  maximum: 5
-                  example: 5
+                  example: 1
       responses:
         '200':
           description: Témoignage géré avec succès.
@@ -469,7 +464,7 @@ paths:
           required: true
           schema:
             type: string
-            enum: [add, remove, update]
+            enum: [add, remove]
           description: Action à effectuer sur l'équipe
       requestBody:
         required: true
@@ -478,12 +473,9 @@ paths:
             schema:
               type: object
               properties:
-                userId:
-                  type: string
-                  example: 'user123'
-                role:
-                  type: string
-                  example: 'intercessor'
+                prayerCrewId:
+                  type: integer
+                  example: 1
       responses:
         '200':
           description: Équipe gérée avec succès.
@@ -520,7 +512,7 @@ paths:
           required: true
           schema:
             type: string
-            enum: [add, remove, update]
+            enum: [add, remove]
           description: Action à effectuer sur la communauté
       requestBody:
         required: true
@@ -530,11 +522,8 @@ paths:
               type: object
               properties:
                 communityId:
-                  type: string
-                  example: 'community123'
-                role:
-                  type: string
-                  example: 'member'
+                  type: integer
+                  example: 1
       responses:
         '200':
           description: Communauté gérée avec succès.
@@ -550,3 +539,46 @@ paths:
           description: Sujet de prière non trouvé.
         '500':
           description: Erreur interne du serveur.
+
+components:
+  schemas:
+    Community:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: 'Communauté de prière'
+        description:
+          type: string
+          example: 'Description de la communauté'
+        createdAt:
+          type: string
+          format: date-time
+          example: '2025-05-04T12:34:56Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2025-05-05T09:12:30Z'
+    PrayerCrew:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: 'Équipe de prière'
+        description:
+          type: string
+          example: 'Description du groupe de prière'
+        createdAt:
+          type: string
+          format: date-time
+          example: '2025-05-04T12:34:56Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2025-05-05T09:12:30Z'
