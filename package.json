@@ -9,8 +9,11 @@
     "dev": "nodemon server.js",
     "swagger:export": "node src/docs/exportSwagger.js",
     "seed:all": "npx sequelize-cli db:seed:all",
+    "seed:all:prod": "NODE_ENV=production npx sequelize-cli db:seed:all",
     "migrate:all": "npx sequelize-cli db:migrate",
+    "migrate:all:prod": "NODE_ENV=production npx sequelize-cli db:migrate",
     "undo:migrate": "npx sequelize-cli db:migrate:undo",
+    "undo:migrate:prod": "NODE_ENV=production npx sequelize-cli db:migrate:undo",
     "lint": "eslint . --ext .js",
     "format": "prettier --write ."
   },

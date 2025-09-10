@@ -10,7 +10,7 @@ const env = cleanEnv(process.env, {
     DB_USER: str({ desc: 'Utilisateur PostgreSQL' }),
     DB_PASSWORD: str({ desc: 'Mot de passe PostgreSQL' }),
     DB_NAME: str({ desc: 'Nom de la base de données' }),
-    DB_DIALECT_ENCRYPTION: str({ choices: ['none', 'require'], default: 'none', desc: 'Encryption SSL : none|require' }),
+    DB_DIALECT_ENCRYPTION: str({ choices: ['none', 'ssl'], default: 'none', desc: 'Encryption SSL : none|ssl' }),
 
     // Auth JWT
     JWT_SECRET: str({ desc: 'Clé secrète pour signer les JWT' }),
