@@ -103,7 +103,7 @@ Express Routes : utiliser le pluriel (/users, /subjects), HTTP verbs explicites
 
   ## yarn run dev # In dev env
 
-  ## yarn run star # In production
+  ## yarn run start # In production
 
   Adapt the command dépending on the package manager you chose
 
@@ -126,7 +126,9 @@ Express Routes : utiliser le pluriel (/users, /subjects), HTTP verbs explicites
 
   ## yarn run seed:all
 
-  the seeding will end successfully by an error message "malformed data value"; dont worry everything is okay.
+  ## yarn run seed:all:prod
+
+  the seeding will end successfully by an error message "GeoNames malformed or error response"; dont worry everything is okay.
 
   any other error is the result of an issue while seeding.
   it's recommended to verify yo have a good fast connexion before seeding to avoid geoname's timeout issues.
@@ -136,11 +138,15 @@ Express Routes : utiliser le pluriel (/users, /subjects), HTTP verbs explicites
 
   ## yarn run migrate:all
 
+  ## yarn run migrate:all:prod
+
   - Notice this functionality will interfer with sequelize automatic sync { alter: true } or { alter: force } if you didn't disabled it like shown on the firt launch step.
   - A standard Ilike type search functionality is already implemented so you can skeep this step if you not necessary need fullText search.
   - You can undo this migratio by using the command:
 
   ## yarn run undo:migrate
+
+  ## yarn run undo:migrate:prod
 
 - Now launch the server and enjoy !!
   You can now lauch the server using start or dev script:
