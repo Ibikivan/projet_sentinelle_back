@@ -6,3 +6,6 @@ node_modules
 
 # Ignore uploaded files
 uploads/
+
+# config.json file with sensitive information
+config/config.json
