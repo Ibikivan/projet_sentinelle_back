@@ -56,7 +56,7 @@ Testimony.associate = (models) => {
 
 Testimony.prototype.toJSON = function () {
     const values = Object.assign({}, this.get());
-    values.voiceContent = process.env.BACKEND_ENDPOINT + values.voiceContent
+    values.voiceContent = values.voiceContent ? process.env.BACKEND_ENDPOINT + values.voiceContent : null;
     return values;
 };
 

@@ -118,6 +118,36 @@ Express Routes : utiliser le pluriel (/users, /subjects), HTTP verbs explicites
 
   ## ./projet_sentinelle_back/config/config.json
 
+  {
+  "development": {
+  "username": "…",
+  "password": "…",
+  "database": "nom_de_ta_db_dev",
+  "host": "127.0.0.1",
+  "dialect": "postgres"
+  },
+  "test": {
+  "username": "…",
+  "password": "…",
+  "database": "nom_de_ta_db_test",
+  "host": "127.0.0.1",
+  "dialect": "postgres"
+  },
+  "production": {
+  "username": "…",
+  "password": "…",
+  "database": "nom_de_ta_db_prod",
+  "host": "127.0.0.1",
+  "dialect": "postgres",
+  "dialectOptions": {
+  "ssl": {
+  "require": true,
+  "rejectUnauthorized": false
+  }
+  }
+  }
+  }
+
   you have to provide database access informations for the environment you are launching for.
 
 - After that tricky part down the server and run seeding command:

@@ -61,7 +61,7 @@ Sharing.associate = (models) => {
 
 Sharing.prototype.toJSON = function () {
     const values = Object.assign({}, this.get());
-    values.voiceUrl = process.env.BACKEND_ENDPOINT + values.voiceUrl;
+    values.voiceUrl = values.voiceUrl ? process.env.BACKEND_ENDPOINT + values.voiceUrl : null;
     return values;
 }
 
