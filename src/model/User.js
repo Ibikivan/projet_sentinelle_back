@@ -110,7 +110,7 @@ User.prototype.toJSON = function () {
     const values = Object.assign({}, this.get());
     delete values.password;
     delete values.tokenRevokedBefore;
-    values.profilePicture = process.env.BACKEND_ENDPOINT + values.profilePicture
+    values.profilePicture = values.profilePicture ? process.env.BACKEND_ENDPOINT + values.profilePicture : null;
     return values;
 };
 
