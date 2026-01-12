@@ -1,118 +1,95 @@
 const { User } = require("../model");
+const { buildQuery, formatPaginatedResult } = require("../utils/queryBuilder");
 
-async function getUserByEmail(email) {
-    const user = await User.findOne({
-        where: { email: email }
+/**
+ * Generic query method for users with filtering, sorting, pagination
+ * @param {Object} params - Query parameters
+ * @returns {Promise<Object>} Paginated users result
+ */
+async function getUsers(params = {}) {
+    const queryOptions = buildQuery(User, params, {
+        allowedFilters: ['role', 'cityId', 'email'],
+        allowedSorts: ['createdAt', 'lastName', 'firstName', 'role', 'cityId'],
+        searchFields: ['firstName', 'lastName', 'email'],
+        allowedIncludes: [
+            { association: 'city', attributes: ['id', 'name', 'countryCode', 'countryName', 'continent', 'continentName'] }
+        ],
+        defaultSort: 'createdAt',
+        defaultOrder: 'DESC',
     });
-    return user;
-}
 
-async function createUser(user, transaction=null) {
-    const newUser = await User.create(user, { transaction });
-    return newUser;
-}
-
-async function getAllUsers(params = {}) {
-    const where = {};
-    const include = [];
-    const order = [];
-
-    // Filters
-    if (params.role) where.role = params.role;
-    if (params.cityId) where.cityId = params.cityId;
-    if (params.email) where.email = params.email;
-    if (params.q) {
-        // Basic OR search across name and email using sequelize operators
-        const { Op } = require('sequelize');
-        where[Op.or] = [
-            { firstName: { [Op.iLike || Op.like]: `%${params.q}%` } },
-            { lastName: { [Op.iLike || Op.like]: `%${params.q}%` } },
-            { email: { [Op.iLike || Op.like]: `%${params.q}%` } },
+    // Handle includeCity shorthand
+    if (params.includeCity === 'true') {
+        queryOptions.include = [
+            { association: 'city', attributes: ['id', 'name', 'countryCode', 'countryName', 'continent', 'continentName'] }
         ];
     }
 
-    // Include city minimal info when requested
-    if (params.includeCity === 'true')
-        include.push({ association: 'city', attributes: ['id', 'name', 'countryCode', 'countryName', 'continent', 'continentName'] });
+    const result = await User.findAndCountAll(queryOptions);
+    return formatPaginatedResult(result, queryOptions._meta, 'users');
+}
 
-    // Sorting
-    const validSortFields = ['createdAt', 'lastName', 'firstName', 'role', 'cityId'];
-    if (params.sortBy && validSortFields.includes(params.sortBy)) {
-        const sortOrder = params.sortOrder === 'asc' ? 'ASC' : 'DESC';
-        order.push([params.sortBy, sortOrder]);
-    } else {
-        order.push(['createdAt', 'DESC']);
-    }
+async function getUserByEmail(email) {
+    return await User.findOne({ where: { email } });
+}
 
-    // Pagination
-    const limit = params.limit ? parseInt(params.limit, 10) : undefined;
-    const page = params.page ? parseInt(params.page, 10) : undefined;
-    const offset = limit && page ? (page - 1) * limit : undefined;
+async function getUserById(id, options = {}) {
+    return await User.findByPk(id, options);
+}
 
-    const result = await User.findAndCountAll({ where, include, order, limit, offset });
-    return {
-        users: result.rows,
-        pagination: {
-            total: result.count,
-            page: limit ? Math.floor((offset || 0) / limit) + 1 : 1,
-            limit: parseInt(limit, 10) || result.count,
-            totalPages: limit ? Math.ceil(result.count / limit) : 1
-        }
-    };
+async function getUserByPhoneNumber(phoneNumber, paranoid = true) {
+    return await User.findOne({
+        where: { phoneNumber },
+        paranoid
+    });
 }
 
 async function getUserDetails(id) {
-    // Aggreger toutes les données nécessaire au profil privé
-    const user = await User.findByPk(id);
-    return user;
+    return await User.findByPk(id, {
+        include: [
+            { association: 'city', attributes: ['id', 'name', 'countryCode', 'countryName'] },
+            { association: 'createdCommunities', attributes: ['id', 'name'] },
+            { association: 'createdCrews', attributes: ['id', 'name'] },
+        ]
+    });
 }
 
-async function getUserById(id) {
-    // Limiter les champs pour le profil publique
-    const user = await User.findByPk(id);
-    return user;
+async function createUser(user, transaction = null) {
+    return await User.create(user, { transaction });
 }
 
-async function updateUser(id, user, transaction=null) {
+async function updateUser(id, user, transaction = null) {
     const [updated] = await User.update(user, {
-        where: { id: id },
+        where: { id },
         transaction
     });
     return updated;
 }
 
-async function deleteUser(id, transaction=null) {
-    const deleted = await User.destroy({
-        where: { id: id },
+async function deleteUser(id, transaction = null) {
+    return await User.destroy({
+        where: { id },
         transaction
     });
-    return deleted;
 }
 
-async function restoreUser(id, transaction=null) {
-    const user = await User.restore(
-        { where: { id },
+async function restoreUser(id, transaction = null) {
+    return await User.restore({
+        where: { id },
         transaction
     });
-    return user;
-}
-
-async function getUserByPhoneNumber(phoneNumber, paranoid=true) {
-    const user = await User.findOne({
-        where: { phoneNumber: phoneNumber },
-        paranoid
-    });
-    return user;
 }
 
 module.exports = {
+    getUsers,
     getUserByEmail,
-    createUser,
-    getAllUsers,
-    getUserDetails,
     getUserById,
+    getUserByPhoneNumber,
+    getUserDetails,
+    createUser,
     updateUser,
     deleteUser,
     restoreUser,
-    getUserByPhoneNumber
-}
+    // Backward compatibility aliases
+    getAllUsers: getUsers,
+};

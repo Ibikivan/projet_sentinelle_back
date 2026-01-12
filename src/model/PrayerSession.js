@@ -3,9 +3,9 @@ const sequelize = require("../config/database");
 
 const PrayerSession = sequelize.define('PrayerSession', {
     id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
-        autoIncrement: true,
     },
     status: {
         type: DataTypes.ENUM('active', 'completed'),

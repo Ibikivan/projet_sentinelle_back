@@ -1,100 +1,93 @@
 const { PrayerSubject } = require("../model");
+const { buildQuery, formatPaginatedResult } = require("../utils/queryBuilder");
 
-async function createSubject(subject, transaction=null) {
-    return await PrayerSubject.create(subject, { transaction });
-};
-
-async function getAllPublicSubjects(params={}) {
-    let where = {};
-    let config = {
-        order: [['createdAt', 'DESC']]
-    };
-
-    if (params.isPublic) where.isPublic = params.isPublic;
-    if (params.state) where.state = params.state;
-
-    if (params.limit) config.limit = params.limit;
-    if (params.offset) config.offset = params.offset;
-    if (params.order) config.order = [['createdAt', params.order]];
-
-    const result = await PrayerSubject.findAndCountAll({
-        where,
-        ...config
+/**
+ * Generic query method for prayer subjects with filtering, sorting, pagination
+ * @param {Object} params - Query parameters  
+ * @returns {Promise<Object>} Paginated subjects result
+ */
+async function getSubjects(params = {}) {
+    const queryOptions = buildQuery(PrayerSubject, params, {
+        allowedFilters: ['isPublic', 'state', 'userId'],
+        allowedSorts: ['createdAt', 'title', 'state'],
+        searchFields: ['title', 'description'],
+        allowedIncludes: [
+            { association: 'creator', attributes: ['id', 'firstName', 'lastName'] },
+            { association: 'testimony', attributes: ['id', 'title'] },
+        ],
+        defaultSort: 'createdAt',
+        defaultOrder: 'DESC',
     });
-    return {
-        subjects: result.rows,
-        pagination: {
-            total: result.count,
-            page: params.limit ? Math.floor((params.offset || 0) / params.limit) + 1 : 1,
-            limit: parseInt(params.limit, 10) || result.count,
-            totalPages: params.limit ? Math.ceil(result.count / params.limit) : 1
-        }
-    };
-};
 
-async function getAllCurrentUserSubjects(userId, params={}) {
-    let where = { userId: userId };
-    let config = {
-        order: [['createdAt', 'DESC']]
-    };
-
-    if (params.isPublic) where.isPublic = params.isPublic;
-    if (params.state) where.state = params.state;
-
-    if (params.limit) config.limit = params.limit;
-    if (params.offset) config.offset = params.offset;
-    if (params.order) config.order = [['createdAt', params.order]];
-
-    const result = await PrayerSubject.findAndCountAll({
-        where,
-        ...config
-    });
-    return {
-        subjects: result.rows,
-        pagination: {
-            total: result.count,
-            page: params.limit ? Math.floor((params.offset || 0) / params.limit) + 1 : 1,
-            limit: parseInt(params.limit, 10) || result.count,
-            totalPages: params.limit ? Math.ceil(result.count / params.limit) : 1
-        }
-    };
-};
+    const result = await PrayerSubject.findAndCountAll(queryOptions);
+    return formatPaginatedResult(result, queryOptions._meta, 'subjects');
+}
 
 async function getSubjectById(id) {
     return await PrayerSubject.findByPk(id);
 }
 
+async function getSubjectWithDetails(id) {
+    return await PrayerSubject.findByPk(id, {
+        include: [
+            { association: 'creator', attributes: ['id', 'firstName', 'lastName'] },
+            { association: 'testimony' },
+            { association: 'prayerCrews', attributes: ['id', 'name'] },
+            { association: 'communities', attributes: ['id', 'name'] },
+        ]
+    });
+}
+
+async function getPublicSubjects(params = {}) {
+    return await getSubjects({ ...params, isPublic: true });
+}
+
+async function getUserSubjects(userId, params = {}) {
+    return await getSubjects({ ...params, userId });
+}
+
 async function getOnePublicSubject(id) {
     return await PrayerSubject.findOne({ where: { id, isPublic: true } });
-};
+}
 
 async function getOneCurrentUserSubject(id, userId) {
     return await PrayerSubject.findOne({ where: { id, userId } });
-};
+}
 
-async function updateCurrentUserSubject(id, userId, data, transaction=null) {
+async function createSubject(subject, transaction = null) {
+    return await PrayerSubject.create(subject, { transaction });
+}
+
+async function updateSubject(id, data, transaction = null) {
     const [affectedRows] = await PrayerSubject.update(data, {
-        where: { id, userId },
+        where: { id },
         transaction
     });
     if (affectedRows === 0) return null;
-    return await PrayerSubject.findOne({ where: { id, userId }, transaction });
-};
+    return await PrayerSubject.findByPk(id, { transaction });
+}
 
-async function deleteCurrentUserSubject(id, userId, transaction=null) {
+async function deleteSubject(id, transaction = null) {
     return await PrayerSubject.destroy({
-        where: { id, userId },
+        where: { id },
         transaction
-    })
+    });
 }
 
 module.exports = {
-    createSubject,
-    getAllPublicSubjects,
-    getAllCurrentUserSubjects,
+    getSubjects,
     getSubjectById,
+    getSubjectWithDetails,
+    getPublicSubjects,
+    getUserSubjects,
     getOnePublicSubject,
     getOneCurrentUserSubject,
-    updateCurrentUserSubject,
-    deleteCurrentUserSubject,
+    createSubject,
+    updateSubject,
+    deleteSubject,
+    // Backward compatibility aliases
+    getAllPublicSubjects: getPublicSubjects,
+    getAllCurrentUserSubjects: getUserSubjects,
+    updateCurrentUserSubject: updateSubject,
+    deleteCurrentUserSubject: deleteSubject,
 };

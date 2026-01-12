@@ -3,9 +3,9 @@ const sequelize = require('../config/database');
 
 const User = sequelize.define('User', {
     id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
-        autoIncrement: true,
     },
     phoneNumber: {
         type: DataTypes.STRING,
@@ -68,14 +68,15 @@ const User = sequelize.define('User', {
 })
 
 User.associate = (models) => {
+    // Ownership relations (creator)
     User.hasMany(models.Community, {
         foreignKey: 'userId',
-        as: 'communities',
+        as: 'createdCommunities',
     });
 
     User.hasMany(models.PrayerCrew, {
         foreignKey: 'userId',
-        as: 'prayerCrews',
+        as: 'createdCrews',
     });
 
     User.hasMany(models.PrayerSubject, {
@@ -93,8 +94,6 @@ User.associate = (models) => {
         as: 'otps',
     });
 
-    // Opimisation possible en ne rajoutant que l'info de la city dont on a besoin,
-    // sans associaion à la table
     User.belongsTo(models.City, {
         foreignKey: 'cityId',
         as: 'city',
@@ -102,7 +101,22 @@ User.associate = (models) => {
 
     User.hasMany(models.PrayerSession, {
         foreignKey: 'userId',
-        as: 'location'
+        as: 'prayerSessions'
+    });
+
+    // Membership relations (N:M via pivot tables)
+    User.belongsToMany(models.PrayerCrew, {
+        through: models.PrayerCrewMember,
+        foreignKey: 'userId',
+        otherKey: 'prayerCrewId',
+        as: 'joinedCrews',
+    });
+
+    User.belongsToMany(models.Community, {
+        through: models.CommunityMember,
+        foreignKey: 'userId',
+        otherKey: 'communityId',
+        as: 'joinedCommunities',
     });
 };
 

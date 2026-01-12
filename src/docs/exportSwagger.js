@@ -1,12 +1,18 @@
 const fs = require('fs');
-const { specs } = require('./swagger');
+const path = require('path');
 
-const outputPath = './swagger-output.json';
+// Load environment variables
+require('dotenv').config();
 
-fs.writeFile(outputPath, JSON.stringify(specs, null, 2), (err) => {
-  if (err) {
-    console.error('Erreur lors de l\'écriture du fichier Swagger JSON:', err);
-  } else {
-    console.log(`Swagger JSON exporté avec succès vers ${outputPath}`);
-  }
-}); 
+// Import swagger specs
+const specs = require('./swagger');
+
+// Output path
+const outputPath = path.join(__dirname, '..', '..', 'swagger.json');
+
+// Write to file
+fs.writeFileSync(outputPath, JSON.stringify(specs, null, 2), 'utf8');
+
+console.log(`✅ Swagger JSON exported to: ${outputPath}`);
+console.log(`📊 Total paths: ${Object.keys(specs.paths || {}).length}`);
+console.log(`📦 Total schemas: ${Object.keys(specs.components?.schemas || {}).length}`);

@@ -1,0 +1,4494 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Sentinelle API",
+    "version": "2.0.0",
+    "description": "\n# API du Réseau Social de Prière Sentinelle\n\nCette API permet de gérer les sujets de prière, les groupes d'intercession, \nles communautés et les sessions de prière avec géolocalisation.\n\n## Authentification\n\nL'API utilise l'authentification par **JWT stocké en cookie HttpOnly**.\n- Connectez-vous via `POST /auth/login`\n- Le cookie `session` est automatiquement géré\n\n## Pagination\n\nLes endpoints de liste supportent la pagination :\n- `page`: Numéro de page (défaut: 1)\n- `limit`: Éléments par page (défaut: 20, max: 100)\n- `sortBy`: Champ de tri\n- `sortOrder`: `asc` ou `desc`\n      ",
+    "contact": {
+      "name": "Support Sentinelle",
+      "email": "support@sentinelle.app"
+    },
+    "license": {
+      "name": "ISC"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Serveur principal"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Authentification et gestion de compte"
+    },
+    {
+      "name": "Users",
+      "description": "Gestion des utilisateurs"
+    },
+    {
+      "name": "Prayers",
+      "description": "Sujets de prière"
+    },
+    {
+      "name": "Sessions",
+      "description": "Sessions de prière"
+    },
+    {
+      "name": "Testimonies",
+      "description": "Témoignages"
+    },
+    {
+      "name": "Sharings",
+      "description": "Partages et commentaires"
+    },
+    {
+      "name": "Cities",
+      "description": "Villes et géolocalisation"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "session",
+        "description": "JWT token stocké dans le cookie session"
+      }
+    },
+    "schemas": {
+      "UUID": {
+        "type": "string",
+        "format": "uuid",
+        "example": "550e8400-e29b-41d4-a716-446655440000"
+      },
+      "Pagination": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "example": 100,
+            "description": "Total number of items"
+          },
+          "page": {
+            "type": "integer",
+            "example": 1,
+            "description": "Current page number"
+          },
+          "limit": {
+            "type": "integer",
+            "example": 20,
+            "description": "Number of items per page"
+          },
+          "totalPages": {
+            "type": "integer",
+            "example": 5,
+            "description": "Total number of pages"
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "example": true
+          },
+          "hasPrevPage": {
+            "type": "boolean",
+            "example": false
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "BAD_REQUEST"
+          },
+          "message": {
+            "type": "string",
+            "example": "Validation failed"
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/UUID",
+            "type": "integer",
+            "example": 1
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "+237612345678"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "user@example.com"
+          },
+          "firstName": {
+            "type": "string",
+            "example": "John"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Doe"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "USER",
+              "ADMIN",
+              "SUPER_ADMIN"
+            ],
+            "example": "USER"
+          },
+          "profilePicture": {
+            "type": "string",
+            "nullable": true,
+            "example": "https://example.com/profile.jpg"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-05-04T12:34:56Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-05-04T12:34:56Z"
+          },
+          "cityId": {
+            "type": "integer",
+            "example": 1
+          },
+          "tokenRevokedBefore": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-05-04T12:34:56Z"
+          }
+        }
+      },
+      "CreateUser": {
+        "type": "object",
+        "required": [
+          "phoneNumber",
+          "email",
+          "password",
+          "firstName",
+          "lastName"
+        ],
+        "properties": {
+          "phoneNumber": {
+            "type": "string",
+            "example": "+237600000000"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "cityId": {
+            "$ref": "#/components/schemas/UUID"
+          }
+        }
+      },
+      "PrayerSubject": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/UUID",
+            "type": "integer"
+          },
+          "title": {
+            "type": "string",
+            "example": "Prière pour la guérison"
+          },
+          "description": {
+            "type": "string"
+          },
+          "isPublic": {
+            "type": "boolean",
+            "default": false
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "active",
+              "closed",
+              "close_expired"
+            ]
+          },
+          "userId": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateSubject": {
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        }
+      },
+      "PrayerSession": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/UUID",
+            "type": "integer",
+            "description": "Unique identifier for the session"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "completed"
+            ],
+            "description": "Current status of the prayer session"
+          },
+          "latitude": {
+            "type": "number",
+            "format": "float",
+            "description": "Latitude coordinate of the session location"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "float",
+            "description": "Longitude coordinate of the session location"
+          },
+          "description": {
+            "type": "string",
+            "description": "Session description"
+          },
+          "userId": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "subjectId": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "cityId": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Session creation timestamp"
+          },
+          "accuracy": {
+            "type": "number",
+            "format": "float",
+            "description": "GPS accuracy in degrees"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Session last update timestamp"
+          },
+          "subject": {
+            "$ref": "#/components/schemas/PrayerSubject"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          },
+          "location": {
+            "$ref": "#/components/schemas/City"
+          }
+        }
+      },
+      "Sharing": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "content": {
+            "type": "string"
+          },
+          "voiceUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "text",
+              "voice"
+            ]
+          },
+          "userId": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "subjectId": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Testimony": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/UUID",
+            "type": "integer",
+            "example": 1
+          },
+          "title": {
+            "type": "string",
+            "nullable": true,
+            "example": "Guérison miraculeuse"
+          },
+          "content": {
+            "type": "string",
+            "nullable": true,
+            "example": "Dieu a agi puissamment dans cette situation."
+          },
+          "voiceContent": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri",
+            "example": "https://cdn.example.com/voices/abc123.mp3"
+          },
+          "attachements": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            },
+            "example": [
+              "https://cdn.example.com/img/1.jpg"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-05-04T12:34:56Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-05-05T09:12:30Z"
+          }
+        }
+      },
+      "City": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/UUID",
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Paris"
+          },
+          "countryCode": {
+            "type": "string",
+            "example": "CM"
+          },
+          "countryName": {
+            "type": "string",
+            "example": "Cameroon"
+          },
+          "continent": {
+            "type": "string",
+            "example": "AF"
+          },
+          "continentName": {
+            "type": "string",
+            "example": "Africa"
+          },
+          "lat": {
+            "type": "number",
+            "format": "float"
+          },
+          "lng": {
+            "type": "number",
+            "format": "float"
+          },
+          "population": {
+            "type": "integer"
+          },
+          "code": {
+            "type": "string",
+            "example": "PAR"
+          },
+          "country": {
+            "type": "string",
+            "example": "FR"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-05-04T12:34:56Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-05-04T12:34:56Z"
+          }
+        }
+      },
+      "CrewMember": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "userId": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "prayerCrewId": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "moderator",
+              "member"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "accepted",
+              "banned",
+              "left"
+            ]
+          },
+          "joinedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "CommunityMember": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "userId": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "communityId": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "responsable",
+              "moderator",
+              "member"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "accepted",
+              "banned",
+              "left"
+            ]
+          },
+          "joinedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "Otp": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "userId": {
+            "type": "integer",
+            "example": 42
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "PASSWORD_RESET",
+              "PHONE_CHANGE",
+              "RESTORE_ACCOUNT"
+            ],
+            "example": "PHONE_CHANGE"
+          },
+          "newValue": {
+            "type": "string",
+            "example": "+237612345678"
+          },
+          "otpHash": {
+            "type": "string",
+            "example": "$2b$10$hashedOtpValue"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-05-04T12:34:56Z"
+          },
+          "attempts": {
+            "type": "integer",
+            "example": 0
+          },
+          "isVerified": {
+            "type": "boolean",
+            "example": false
+          },
+          "verifiedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-05-04T13:00:00Z"
+          },
+          "ip": {
+            "type": "string",
+            "example": "192.168.1.1"
+          }
+        }
+      },
+      "CitySearchResult": {
+        "description": "Résultat de recherche pour une ville, incluant des métadonnées de pertinence.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/City"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "rank": {
+                "type": "number",
+                "format": "float",
+                "description": "Score de pertinence de la recherche.",
+                "example": 0.42
+              },
+              "excerpt": {
+                "type": "string",
+                "description": "Extrait textuel avec mise en évidence des correspondances.",
+                "example": "France — <b>Paris</b> est la capitale..."
+              }
+            }
+          }
+        ]
+      },
+      "Community": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Communauté de prière"
+          },
+          "description": {
+            "type": "string",
+            "example": "Description de la communauté"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-05-04T12:34:56Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-05-05T09:12:30Z"
+          }
+        }
+      },
+      "PrayerCrew": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Équipe de prière"
+          },
+          "description": {
+            "type": "string",
+            "example": "Description du groupe de prière"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-05-04T12:34:56Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-05-05T09:12:30Z"
+          }
+        }
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Unauthorized - authentication required",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error",
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Authentication required"
+                }
+              }
+            },
+            "example": {
+              "code": "UNAUTHORIZED",
+              "message": "Missing token"
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Accès refusé",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "code": "FORBIDDEN",
+              "message": "Access denied"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Not found - resource doesn't exist",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error",
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Resource not found"
+                }
+              }
+            },
+            "example": {
+              "code": "NOT_FOUND",
+              "message": "Resource not found"
+            }
+          }
+        }
+      },
+      "ValidationError": {
+        "description": "Erreur de validation",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "BadRequest": {
+        "description": "Bad request - validation error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Validation error"
+                },
+                "errors": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "field": {
+                        "type": "string"
+                      },
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "Conflict - resource already exists or invalid state",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Resource conflict"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "cookieAuth": []
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "summary": "Connexion utilisateur",
+        "description": "Permet à un utilisateur de se connecter en fournissant ses informations d'identification.",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phoneNumber": {
+                    "type": "string",
+                    "example": "+237612345678"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "Password123!"
+                  }
+                },
+                "required": [
+                  "phoneNumber",
+                  "password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Connexion réussie.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Login successful"
+                    },
+                    "token": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erreur de validation ou informations incorrectes."
+          },
+          "401": {
+            "description": "Identifiants invalides."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/auth/change-phone-number": {
+      "post": {
+        "summary": "Demande de changement de numéro de téléphone",
+        "description": "Permet à un utilisateur connecté de demander un changement de numéro de téléphone.",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "newPhoneNumber": {
+                    "type": "string",
+                    "example": "+237698765432"
+                  }
+                },
+                "required": [
+                  "newPhoneNumber"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Demande de changement de numéro de téléphone réussie.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "OTP sent"
+                    },
+                    "otp": {
+                      "$ref": "#/components/schemas/Otp"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erreur de validation ou numéro déjà utilisé."
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/auth/verify-phone-otp": {
+      "post": {
+        "summary": "Vérification du code OTP pour le changement de numéro de téléphone",
+        "description": "Permet à un utilisateur connecté de vérifier le code OTP pour confirmer le changement de numéro de téléphone.",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "otpCode": {
+                    "type": "string",
+                    "example": "123456"
+                  }
+                },
+                "required": [
+                  "otpCode"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Numéro de téléphone mis à jour avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Phone number updated"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Format OTP invalide."
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "404": {
+            "description": "OTP non trouvé."
+          },
+          "410": {
+            "description": "OTP expiré."
+          },
+          "429": {
+            "description": "Tentatives maximales dépassées."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/auth/change-password": {
+      "post": {
+        "summary": "Changer le mot de passe de l'utilisateur connecté",
+        "description": "Permet à un utilisateur connecté de changer son mot de passe.",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "oldPassword": {
+                    "type": "string",
+                    "example": "OldPassword123!"
+                  },
+                  "newPassword": {
+                    "type": "string",
+                    "example": "NewPassword123!"
+                  }
+                },
+                "required": [
+                  "oldPassword",
+                  "newPassword"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Mot de passe changé avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Password changed"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erreur de validation ou mot de passe invalide."
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/auth/forgot-password": {
+      "post": {
+        "summary": "Demande de réinitialisation de mot de passe",
+        "description": "Permet à un utilisateur de demander un code OTP pour réinitialiser son mot de passe.",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phoneNumber": {
+                    "type": "string",
+                    "example": "+237612345678"
+                  }
+                },
+                "required": [
+                  "phoneNumber"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OTP envoyé avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "OTP sent"
+                    },
+                    "otp": {
+                      "$ref": "#/components/schemas/Otp"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Numéro de téléphone requis ou invalide."
+          },
+          "404": {
+            "description": "Utilisateur non trouvé."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/auth/verify-password-otp": {
+      "post": {
+        "summary": "Vérification du code OTP pour réinitialiser le mot de passe",
+        "description": "Permet à un utilisateur de vérifier le code OTP pour réinitialiser son mot de passe.",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phoneNumber": {
+                    "type": "string",
+                    "example": "+237612345678"
+                  },
+                  "otpCode": {
+                    "type": "string",
+                    "example": "123456"
+                  }
+                },
+                "required": [
+                  "phoneNumber",
+                  "otpCode"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OTP vérifié avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "OTP verified"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Format OTP invalide."
+          },
+          "404": {
+            "description": "OTP ou utilisateur non trouvé."
+          },
+          "410": {
+            "description": "OTP expiré."
+          },
+          "429": {
+            "description": "Tentatives maximales dépassées."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/auth/reset-password": {
+      "post": {
+        "summary": "Réinitialiser le mot de passe",
+        "description": "Permet à un utilisateur de réinitialiser son mot de passe après vérification du code OTP.",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "otpId": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "newPassword": {
+                    "type": "string",
+                    "example": "NewPassword123!"
+                  }
+                },
+                "required": [
+                  "otpId",
+                  "newPassword"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Mot de passe réinitialisé avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Password reset"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erreur de validation ou mot de passe invalide."
+          },
+          "404": {
+            "description": "OTP ou utilisateur non trouvé."
+          },
+          "410": {
+            "description": "OTP expiré."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "summary": "Déconnexion utilisateur",
+        "description": "Permet à un utilisateur connecté de se déconnecter.",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Déconnexion réussie.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "User logged out"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "session"
+      }
+    },
+    "/cities": {
+      "post": {
+        "summary": "Créer une nouvelle ville",
+        "description": "Ajoute une nouvelle ville à la base de données. Les noms de villes doivent être uniques et respecter les contraintes de validation.",
+        "tags": [
+          "Cities"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Paris"
+                  },
+                  "code": {
+                    "type": "string",
+                    "example": "PAR"
+                  },
+                  "country": {
+                    "type": "string",
+                    "example": "FR"
+                  }
+                },
+                "required": [
+                  "name",
+                  "code",
+                  "country"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ville créée avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "City created"
+                    },
+                    "city": {
+                      "$ref": "#/components/schemas/City"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erreur de validation ou ville déjà existante."
+          },
+          "409": {
+            "description": "Conflit. Une ville avec le même code existe déjà."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      },
+      "get": {
+        "summary": "Récupérer toutes les villes",
+        "description": "Retourne une liste de toutes les villes disponibles dans la base de données, avec filtres, tri et pagination.",
+        "tags": [
+          "Cities"
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Filtrer par nom exact de ville",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "countryCode",
+            "in": "query",
+            "description": "Filtrer par code pays (ISO 3166-1 alpha-2)",
+            "schema": {
+              "type": "string",
+              "example": "FR"
+            }
+          },
+          {
+            "name": "countryName",
+            "in": "query",
+            "description": "Filtrer par nom de pays",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "continent",
+            "in": "query",
+            "description": "Filtrer par code continent",
+            "schema": {
+              "type": "string",
+              "example": "EU"
+            }
+          },
+          {
+            "name": "continentName",
+            "in": "query",
+            "description": "Filtrer par nom de continent",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Recherche textuelle (ville, région administrative ou pays)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "Champ de tri",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "createdAt",
+                "name",
+                "population",
+                "countryCode"
+              ],
+              "default": "createdAt"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "description": "Ordre de tri",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Numéro de page (à partir de 1)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Nombre d'éléments par page (max 100)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des villes récupérée avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "cities": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/City"
+                      }
+                    },
+                    "pagination": {
+                      "$ref": "#/components/schemas/Pagination"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/cities/search": {
+      "get": {
+        "summary": "Recherche de villes (plein texte)",
+        "description": "Retourne une liste de villes correspondant au mot-clé fourni, classées par pertinence. La réponse peut inclure un score de pertinence et un extrait contextuel.",
+        "tags": [
+          "Cities"
+        ],
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": true,
+            "description": "Mot-clé de recherche (ex. \"Paris\", \"Douala\")",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Résultats de la recherche récupérés avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CitySearchResult"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/cities/{id}": {
+      "get": {
+        "summary": "Récupérer une ville par ID",
+        "description": "Retourne les détails d'une ville spécifique en fonction de son ID.",
+        "tags": [
+          "Cities"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID de la ville."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ville récupérée avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/City"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ville non trouvée."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      },
+      "put": {
+        "summary": "Mettre à jour une ville",
+        "description": "Met à jour les informations d'une ville existante. Les champs modifiés doivent respecter les contraintes de validation.",
+        "tags": [
+          "Cities"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID de la ville."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Paris"
+                  },
+                  "code": {
+                    "type": "string",
+                    "example": "PAR"
+                  },
+                  "country": {
+                    "type": "string",
+                    "example": "FR"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ville mise à jour avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "City updated"
+                    },
+                    "city": {
+                      "$ref": "#/components/schemas/City"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erreur de validation."
+          },
+          "404": {
+            "description": "Ville non trouvée."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      },
+      "delete": {
+        "summary": "Supprimer une ville",
+        "description": "Supprime une ville existante en fonction de son ID.",
+        "tags": [
+          "Cities"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID de la ville."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ville supprimée avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "City deleted"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ville non trouvée."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/subjects": {
+      "post": {
+        "summary": "Créer un sujet de prière",
+        "description": "Permet à un utilisateur connecté de créer un nouveau sujet de prière.",
+        "tags": [
+          "Prayer Subjects"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "example": "Sujet de prière important"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Description détaillée du sujet de prière"
+                  },
+                  "isPublic": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "category": {
+                    "type": "string",
+                    "example": "Santé"
+                  }
+                },
+                "required": [
+                  "title",
+                  "description"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Sujet de prière créé avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrayerSubject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erreur de validation des données."
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/subjects/publics": {
+      "get": {
+        "summary": "Récupérer tous les sujets de prière publics",
+        "description": "Récupère la liste de tous les sujets de prière publics, avec filtres, tri et pagination.",
+        "tags": [
+          "Prayer Subjects"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "state",
+            "in": "query",
+            "description": "Filtrer par état du sujet",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "close_exhausted",
+                "close_expired"
+              ]
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "description": "Ordre de tri sur createdAt",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "default": "DESC"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Numéro de page (à partir de 1)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Nombre d'éléments par page (max 100)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des sujets de prière publics récupérée avec succès, avec métadonnées de pagination.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "subjects": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PrayerSubject"
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "integer",
+                          "example": 100
+                        },
+                        "page": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "limit": {
+                          "type": "integer",
+                          "example": 20
+                        },
+                        "totalPages": {
+                          "type": "integer",
+                          "example": 5
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/subjects/me/all": {
+      "get": {
+        "summary": "Récupérer tous les sujets de prière de l'utilisateur connecté",
+        "description": "Récupère la liste de tous les sujets de prière créés par l'utilisateur connecté, avec filtres, tri et pagination.",
+        "tags": [
+          "Prayer Subjects"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "state",
+            "in": "query",
+            "description": "Filtrer par état du sujet",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "close_exhausted",
+                "close_expired"
+              ]
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "description": "Ordre de tri sur createdAt",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "default": "DESC"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Numéro de page (à partir de 1)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Nombre d'éléments par page (max 100)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des sujets de prière de l'utilisateur récupérée avec succès, avec métadonnées de pagination.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "subjects": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PrayerSubject"
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "integer",
+                          "example": 100
+                        },
+                        "page": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "limit": {
+                          "type": "integer",
+                          "example": 20
+                        },
+                        "totalPages": {
+                          "type": "integer",
+                          "example": 5
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/subjects/{id}": {
+      "get": {
+        "summary": "Récupérer un sujet de prière public",
+        "description": "Récupère un sujet de prière public par son ID.",
+        "tags": [
+          "Prayer Subjects"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID du sujet de prière"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sujet de prière récupéré avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrayerSubject"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "404": {
+            "description": "Sujet de prière non trouvé."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/subjects/{id}/me": {
+      "get": {
+        "summary": "Récupérer un sujet de prière spécifique de l'utilisateur connecté",
+        "description": "Récupère un sujet de prière spécifique créé par l'utilisateur connecté.",
+        "tags": [
+          "Prayer Subjects"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID du sujet de prière"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sujet de prière récupéré avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrayerSubject"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "404": {
+            "description": "Sujet de prière non trouvé."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      },
+      "put": {
+        "summary": "Mettre à jour un sujet de prière de l'utilisateur connecté",
+        "description": "Permet à l'utilisateur connecté de mettre à jour un de ses sujets de prière.",
+        "tags": [
+          "Prayer Subjects"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID du sujet de prière"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "example": "Titre mis à jour"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Description mise à jour"
+                  },
+                  "isPublic": {
+                    "type": "boolean",
+                    "example": false
+                  },
+                  "category": {
+                    "type": "string",
+                    "example": "Famille"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sujet de prière mis à jour avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrayerSubject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erreur de validation des données."
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "404": {
+            "description": "Sujet de prière non trouvé."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      },
+      "delete": {
+        "summary": "Supprimer un sujet de prière de l'utilisateur connecté",
+        "description": "Permet à l'utilisateur connecté de supprimer un de ses sujets de prière.",
+        "tags": [
+          "Prayer Subjects"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID du sujet de prière"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sujet de prière supprimé avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Sujet de prière supprimé avec succès"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "404": {
+            "description": "Sujet de prière non trouvé."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/subjects/{id}/visibility/{visibility}": {
+      "patch": {
+        "summary": "Mettre à jour la visibilité d'un sujet de prière",
+        "description": "Permet à l'utilisateur connecté de modifier la visibilité de son sujet de prière.",
+        "tags": [
+          "Prayer Subjects"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID du sujet de prière"
+          },
+          {
+            "name": "visibility",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "public",
+                "private"
+              ]
+            },
+            "description": "Nouvelle visibilité du sujet"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Visibilité mise à jour avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrayerSubject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erreur de validation des données."
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "404": {
+            "description": "Sujet de prière non trouvé."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/subjects/{id}/state/{state}": {
+      "patch": {
+        "summary": "Mettre à jour l'état d'un sujet de prière",
+        "description": "Permet à l'utilisateur connecté de modifier l'état de son sujet de prière.",
+        "tags": [
+          "Prayer Subjects"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID du sujet de prière"
+          },
+          {
+            "name": "state",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "close_exhausted",
+                "close_expired"
+              ]
+            },
+            "description": "Nouvel état du sujet"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "État mis à jour avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrayerSubject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erreur de validation des données."
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "404": {
+            "description": "Sujet de prière non trouvé."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/subjects/{id}/testimony/{action}": {
+      "patch": {
+        "summary": "Gérer les témoignages d'un sujet de prière",
+        "description": "Permet à l'utilisateur connecté de gérer les témoignages de son sujet de prière.",
+        "tags": [
+          "Prayer Subjects"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID du sujet de prière"
+          },
+          {
+            "name": "action",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "add",
+                "remove"
+              ]
+            },
+            "description": "Action à effectuer sur le témoignage"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "testimonyId": {
+                    "type": "integer",
+                    "example": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Témoignage géré avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Testimony"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erreur de validation des données."
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "404": {
+            "description": "Sujet de prière non trouvé."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/subjects/{id}/crew/{action}": {
+      "patch": {
+        "summary": "Gérer l'équipe de prière d'un sujet",
+        "description": "Permet à l'utilisateur connecté de gérer l'équipe de prière de son sujet.",
+        "tags": [
+          "Prayer Subjects"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID du sujet de prière"
+          },
+          {
+            "name": "action",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "add",
+                "remove"
+              ]
+            },
+            "description": "Action à effectuer sur l'équipe"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "prayerCrewId": {
+                    "type": "integer",
+                    "example": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Équipe gérée avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrayerCrew"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erreur de validation des données."
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "404": {
+            "description": "Sujet de prière non trouvé."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/subjects/{id}/community/{action}": {
+      "patch": {
+        "summary": "Gérer la communauté d'un sujet de prière",
+        "description": "Permet à l'utilisateur connecté de gérer la communauté de son sujet de prière.",
+        "tags": [
+          "Prayer Subjects"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID du sujet de prière"
+          },
+          {
+            "name": "action",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "add",
+                "remove"
+              ]
+            },
+            "description": "Action à effectuer sur la communauté"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "communityId": {
+                    "type": "integer",
+                    "example": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Communauté gérée avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Community"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erreur de validation des données."
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "404": {
+            "description": "Sujet de prière non trouvé."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/prayer-session": {
+      "post": {
+        "tags": [
+          "Sessions"
+        ],
+        "summary": "Start a new prayer session",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "subjectId"
+                ],
+                "properties": {
+                  "subjectId": {
+                    "type": "integer",
+                    "description": "ID of the prayer subject"
+                  },
+                  "cityId": {
+                    "type": "integer",
+                    "description": "ID of the city (optional if coordinates provided)"
+                  },
+                  "latitude": {
+                    "type": "number",
+                    "format": "float",
+                    "description": "Latitude coordinate (optional if cityId provided)"
+                  },
+                  "longitude": {
+                    "type": "number",
+                    "format": "float",
+                    "description": "Longitude coordinate (optional if cityId provided)"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Session description"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Session started successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Session started"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/PrayerSession"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Sessions"
+        ],
+        "summary": "Get sessions by prayer subject",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "subjectId",
+            "in": "query",
+            "required": true,
+            "description": "ID of the prayer subject",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by session status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "completed"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sessions retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Sessions retrieved"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PrayerSession"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/prayer-session/user/me": {
+      "get": {
+        "tags": [
+          "Sessions"
+        ],
+        "summary": "Get current user's sessions",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by session status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "completed"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sessions retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Sessions retrieved"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PrayerSession"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/prayer-session/all": {
+      "get": {
+        "tags": [
+          "Sessions"
+        ],
+        "summary": "Get all prayer sessions with filtering and sorting",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by session status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "completed"
+              ]
+            }
+          },
+          {
+            "name": "cityId",
+            "in": "query",
+            "description": "Filter by specific city ID",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "countryCode",
+            "in": "query",
+            "description": "Filter by country code (ISO 3166-1 alpha-2)",
+            "schema": {
+              "type": "string",
+              "example": "US"
+            }
+          },
+          {
+            "name": "countryName",
+            "in": "query",
+            "description": "Filter by country name",
+            "schema": {
+              "type": "string",
+              "example": "United States"
+            }
+          },
+          {
+            "name": "continent",
+            "in": "query",
+            "description": "Filter by continent code",
+            "schema": {
+              "type": "string",
+              "example": "NA"
+            }
+          },
+          {
+            "name": "continentName",
+            "in": "query",
+            "description": "Filter by continent name",
+            "schema": {
+              "type": "string",
+              "example": "North America"
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "Field to sort by",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "createdAt",
+                "updatedAt",
+                "status",
+                "cityId"
+              ],
+              "default": "createdAt"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "description": "Sort order",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number (starts from 1)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of items per page",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sessions retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Sessions retrieved"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "sessions": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/PrayerSession"
+                          }
+                        },
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/prayer-session/{id}": {
+      "get": {
+        "tags": [
+          "Sessions"
+        ],
+        "summary": "Get a specific prayer session by ID",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Session ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Session retrieved"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/PrayerSession"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Sessions"
+        ],
+        "summary": "Update a prayer session",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Session ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cityId": {
+                    "type": "integer",
+                    "description": "New city ID"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "New session description"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Session updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Session updated"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/PrayerSession"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Sessions"
+        ],
+        "summary": "End a prayer session",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Session ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Session ended successfully"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/sharings": {
+      "post": {
+        "summary": "Ajouter un partage",
+        "description": "Permet à un utilisateur connecté d'ajouter un partage pour un sujet de prière. Permet l'envoi d'un fichier audio (voiceUrl) via un champ de type fichier si le type est 'voice'.",
+        "tags": [
+          "Sharings"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "subjectId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID du sujet de prière"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "string",
+                    "example": "Partage important sur ce sujet de prière"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "text",
+                      "voice"
+                    ],
+                    "example": "voice"
+                  },
+                  "voiceUrl": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Fichier audio à uploader comme partage vocal (mp3, mpeg, wave)"
+                  }
+                },
+                "required": [
+                  "content",
+                  "type"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Partage ajouté avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Sharing"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erreur de validation des données."
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "404": {
+            "description": "Sujet de prière non trouvé."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      },
+      "get": {
+        "summary": "Récupérer les partages d'un sujet de prière",
+        "description": "Récupère tous les partages associés à un sujet de prière spécifique, avec filtres, tri et pagination.",
+        "tags": [
+          "Sharings"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "subjectId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID du sujet de prière"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Filtrer par type de partage",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "text",
+                "voice"
+              ]
+            }
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "description": "Filtrer par créateur (ID utilisateur)",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "includeUser",
+            "in": "query",
+            "description": "Inclure les informations minimales du créateur",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ],
+              "default": "false"
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "Champ de tri",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "createdAt",
+                "type"
+              ],
+              "default": "createdAt"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "description": "Ordre de tri",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Numéro de page (à partir de 1)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Nombre d'éléments par page (max 100)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des partages récupérée avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Sharing"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID du sujet de prière manquant."
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/sharings/{id}": {
+      "get": {
+        "summary": "Récupérer un partage par ID",
+        "description": "Récupère un partage spécifique par son ID.",
+        "tags": [
+          "Sharings"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID du partage"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Partage récupéré avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Sharing"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "404": {
+            "description": "Partage non trouvé."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      },
+      "put": {
+        "summary": "Mettre à jour un partage",
+        "description": "Permet à l'utilisateur connecté de mettre à jour son partage.",
+        "tags": [
+          "Sharings"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID du partage"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "string",
+                    "example": "Partage mis à jour avec plus de détails"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "text",
+                      "voice"
+                    ],
+                    "example": "prayer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Partage mis à jour avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Sharing"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erreur de validation des données."
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "403": {
+            "description": "Non autorisé. L'utilisateur ne peut modifier que ses propres partages."
+          },
+          "404": {
+            "description": "Partage non trouvé."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      },
+      "delete": {
+        "summary": "Supprimer un partage",
+        "description": "Permet à l'utilisateur connecté de supprimer son partage.",
+        "tags": [
+          "Sharings"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID du partage"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Partage supprimé avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Partage supprimé avec succès"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "403": {
+            "description": "Non autorisé. L'utilisateur ne peut supprimer que ses propres partages."
+          },
+          "404": {
+            "description": "Partage non trouvé."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/sharings/user/me": {
+      "get": {
+        "summary": "Récupérer tous les partages de l'utilisateur connecté",
+        "description": "Récupère la liste de tous les partages créés par l'utilisateur connecté, avec filtres, tri et pagination.",
+        "tags": [
+          "Sharings"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Filtrer par type de partage",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "text",
+                "voice"
+              ]
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "Champ de tri",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "createdAt",
+                "type"
+              ],
+              "default": "createdAt"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "description": "Ordre de tri",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Numéro de page (à partir de 1)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Nombre d'éléments par page (max 100)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des partages de l'utilisateur récupérée avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Sharing"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/testimonies/subjects/{subjectId}": {
+      "post": {
+        "summary": "Ajouter un témoignage à un sujet de prière",
+        "description": "Permet à un utilisateur connecté d'ajouter un témoignage à un sujet de prière. Permet l'envoi d'un fichier audio (voiceContent) via un champ de type fichier.",
+        "tags": [
+          "Testimonies"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "subjectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID du sujet de prière"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "example": "Exhausement de prière"
+                  },
+                  "content": {
+                    "type": "string",
+                    "example": "Dieu a répondu à nos prières de manière miraculeuse!"
+                  },
+                  "voiceContent": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Fichier audio à uploader comme témoignage vocal (mp3, mpeg, wave, m4a)"
+                  }
+                },
+                "required": [
+                  "content"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Témoignage ajouté avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Testimony"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erreur de validation des données."
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "404": {
+            "description": "Sujet de prière non trouvé."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      },
+      "get": {
+        "summary": "Récupérer le témoignage d'un sujet de prière",
+        "description": "Récupère le témoignage associé à un sujet de prière spécifique.",
+        "tags": [
+          "Testimonies"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "subjectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID du sujet de prière"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Témoignage récupéré avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Testimony"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "404": {
+            "description": "Témoignage non trouvé."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      },
+      "put": {
+        "summary": "Mettre à jour un témoignage",
+        "description": "Permet à l'utilisateur connecté de mettre à jour son témoignage sur un sujet de prière. Permet l'envoi d'un fichier audio (voiceContent) via un champ de type fichier.",
+        "tags": [
+          "Testimonies"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "subjectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID du sujet de prière"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "example": "Exhausement de prière"
+                  },
+                  "content": {
+                    "type": "string",
+                    "example": "Témoignage mis à jour avec plus de détails"
+                  },
+                  "voiceContent": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Fichier audio à uploader comme témoignage vocal (mp3, mpeg, wave, m4a)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Témoignage mis à jour avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Testimony"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erreur de validation des données."
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "404": {
+            "description": "Témoignage non trouvé."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      },
+      "delete": {
+        "summary": "Supprimer un témoignage",
+        "description": "Permet à l'utilisateur connecté de supprimer son témoignage sur un sujet de prière.",
+        "tags": [
+          "Testimonies"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "subjectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID du sujet de prière"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Témoignage supprimé avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Témoignage supprimé avec succès"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "404": {
+            "description": "Témoignage non trouvé."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/users": {
+      "post": {
+        "summary": "Enregistrer un nouvel utilisateur",
+        "description": "Crée un nouvel utilisateur dans la base de données. Permet l'envoi d'un fichier avatar (profilePicture) via un champ de type fichier.",
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phoneNumber": {
+                    "type": "string",
+                    "example": "+237612345678"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "user@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "Password123!"
+                  },
+                  "firstName": {
+                    "type": "string",
+                    "example": "John"
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "example": "Doe"
+                  },
+                  "cityId": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "profilePicture": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Fichier image à uploader comme avatar (jpeg, png, jpg, webp)"
+                  }
+                },
+                "required": [
+                  "phoneNumber",
+                  "password",
+                  "firstName",
+                  "lastName",
+                  "cityId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Utilisateur créé avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "User created"
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erreur de validation ou utilisateur déjà existant."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      },
+      "get": {
+        "summary": "Récupérer tous les utilisateurs",
+        "description": "Retourne une liste de tous les utilisateurs disponibles dans la base de données.",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "role",
+            "in": "query",
+            "description": "Filtrer par rôle utilisateur",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "USER",
+                "ADMIN",
+                "SUPER_ADMIN"
+              ]
+            }
+          },
+          {
+            "name": "cityId",
+            "in": "query",
+            "description": "Filtrer par identifiant de ville",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "description": "Filtrer par email exact",
+            "schema": {
+              "type": "string",
+              "format": "email"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Recherche textuelle (nom, prénom ou email)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "includeCity",
+            "in": "query",
+            "description": "Inclure les informations minimales de la ville",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ],
+              "default": "false"
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "Champ de tri",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "createdAt",
+                "lastName",
+                "firstName",
+                "role",
+                "cityId"
+              ],
+              "default": "createdAt"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "description": "Ordre de tri",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Numéro de page (à partir de 1)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Nombre d'éléments par page (max 100)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des utilisateurs récupérée avec succès, avec métadonnées de pagination.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "users": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/User"
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "integer",
+                          "example": 100
+                        },
+                        "page": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "limit": {
+                          "type": "integer",
+                          "example": 20
+                        },
+                        "totalPages": {
+                          "type": "integer",
+                          "example": 5
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      },
+      "put": {
+        "summary": "Mettre à jour le profil de l'utilisateur connecté",
+        "description": "Met à jour les informations de l'utilisateur actuellement connecté. Permet l'envoi d'un fichier avatar (profilePicture) via un champ de type fichier.",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "user@example.com"
+                  },
+                  "firstName": {
+                    "type": "string",
+                    "example": "John"
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "example": "Doe"
+                  },
+                  "cityId": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "profilePicture": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Fichier image à uploader comme avatar (jpeg, png, jpg, webp)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Profil mis à jour avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "User updated"
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "404": {
+            "description": "Utilisateur non trouvé."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      },
+      "delete": {
+        "summary": "Supprimer le profil de l'utilisateur connecté",
+        "description": "Supprime le compte de l'utilisateur actuellement connecté.",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profil supprimé avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Profile deleted"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/users/details": {
+      "get": {
+        "summary": "Récupérer les détails du profil de l'utilisateur connecté",
+        "description": "Retourne les informations détaillées de l'utilisateur actuellement connecté.",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Détails du profil récupérés avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "summary": "Récupérer un utilisateur par ID",
+        "description": "Retourne les informations publiques d'un utilisateur spécifique en fonction de son ID.",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID de l'utilisateur."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Utilisateur récupéré avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "404": {
+            "description": "Utilisateur non trouvé."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      },
+      "put": {
+        "summary": "Mise à jour d'un utilisateur par un administrateur",
+        "description": "Permet à un administrateur de mettre à jour les informations d'un utilisateur spécifique. Permet l'envoi d'un fichier avatar (profilePicture) via un champ de type fichier.",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID de l'utilisateur."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "USER",
+                      "ADMIN",
+                      "SUPER_ADMIN"
+                    ],
+                    "example": "ADMIN"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "admin@example.com"
+                  },
+                  "firstName": {
+                    "type": "string",
+                    "example": "Admin"
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "example": "User"
+                  },
+                  "cityId": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "profilePicture": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Fichier image à uploader comme avatar (jpeg, png, jpg, webp)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Utilisateur mis à jour avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "User updated"
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "403": {
+            "description": "Accès refusé. L'utilisateur doit être un administrateur."
+          },
+          "404": {
+            "description": "Utilisateur non trouvé."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      },
+      "delete": {
+        "summary": "Suppression d'un utilisateur par un administrateur",
+        "description": "Permet à un administrateur de supprimer un utilisateur spécifique.",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID de l'utilisateur."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Utilisateur supprimé avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "User deleted"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non autorisé. L'utilisateur doit être connecté."
+          },
+          "403": {
+            "description": "Accès refusé. L'utilisateur doit être un administrateur."
+          },
+          "404": {
+            "description": "Utilisateur non trouvé."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/users/request-restauration": {
+      "post": {
+        "summary": "Demande de restauration de compte",
+        "description": "Permet à un utilisateur de demander un OTP pour restaurer un compte supprimé.",
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phoneNumber": {
+                    "type": "string",
+                    "example": "+237612345678"
+                  }
+                },
+                "required": [
+                  "phoneNumber"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OTP envoyé avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "OTP sent"
+                    },
+                    "otp": {
+                      "$ref": "#/components/schemas/Otp"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Numéro de téléphone requis ou invalide."
+          },
+          "404": {
+            "description": "Utilisateur non trouvé."
+          },
+          "410": {
+            "description": "Compte non supprimé."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    },
+    "/users/verify-restauration": {
+      "post": {
+        "summary": "Vérification du code OTP pour la restauration de compte",
+        "description": "Permet à un utilisateur de vérifier un OTP pour restaurer un compte supprimé.",
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phoneNumber": {
+                    "type": "string",
+                    "example": "+237612345678"
+                  },
+                  "otpCode": {
+                    "type": "string",
+                    "example": "123456"
+                  }
+                },
+                "required": [
+                  "phoneNumber",
+                  "otpCode"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Compte restauré avec succès.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Account restored"
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Format OTP invalide."
+          },
+          "404": {
+            "description": "OTP ou utilisateur non trouvé."
+          },
+          "410": {
+            "description": "OTP expiré."
+          },
+          "429": {
+            "description": "Tentatives maximales dépassées."
+          },
+          "500": {
+            "description": "Erreur interne du serveur."
+          }
+        }
+      }
+    }
+  }
+}

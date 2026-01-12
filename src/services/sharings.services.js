@@ -1,4 +1,4 @@
-const { ValidationError, where } = require("sequelize");
+const { ValidationError } = require("../utils/errors.classes");
 const { getUserAndSubject } = require("../utils/functions");
 const { sequelize } = require("../model");
 const sharingsRepository = require("../repositories/sharings.repositories");

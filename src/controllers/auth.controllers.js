@@ -66,7 +66,7 @@ const changePassword = asyncHandler(async (req, res) => {
 
 const forgotPassword = asyncHandler(async (req, res) => {
     const { phoneNumber } = req.body;
-    if ( !phoneNumber ) res.status(400).json("Requester's phone number is required");
+    if ( !phoneNumber ) return res.status(400).json("Requester's phone number is required");
 
     const otp = await authServices.requestToResetForgottenPassword(phoneNumber, req.ip);
     res.status(200).json({ message: 'OTP sent', otp });
@@ -74,7 +74,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
 const verifyPasswordOtp = asyncHandler(async (req, res) => {
     const { phoneNumber, otpCode } = req.body;
-    if (!phoneNumber || !otpCode) res.status(400).json({ message: "Requester's phone number and otp code are required" });
+    if (!phoneNumber || !otpCode) return res.status(400).json({ message: "Requester's phone number and otp code are required" });
 
     const otp = await authServices.verifyPasswordOtp(phoneNumber, otpCode);
     res.status(200).json({ message: 'Otp verified', otp });
@@ -82,7 +82,7 @@ const verifyPasswordOtp = asyncHandler(async (req, res) => {
 
 const resetPassword = asyncHandler(async (req, res) => {
     const { otpId, newPassword } = req.body;
-    if (!otpId || !newPassword) res.status(400).json({ message: "Requester's phone number and otp id are requierd" });
+    if (!otpId || !newPassword) return res.status(400).json({ message: "Requester's phone number and otp id are requierd" });
 
     const user = await authServices.resetPassword(otpId, newPassword);
 

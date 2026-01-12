@@ -1,33 +1,55 @@
 const { Testimony } = require("../model");
+const { buildQuery, formatPaginatedResult } = require("../utils/queryBuilder");
 
-async function createTestimony(data, transaction=null) {
-    return await Testimony.create(data, { transaction });
-};
+/**
+ * Generic query method for testimonies
+ * @param {Object} params - Query parameters
+ * @returns {Promise<Object>} Paginated testimonies result
+ */
+async function getTestimonies(params = {}) {
+    const queryOptions = buildQuery(Testimony, params, {
+        allowedFilters: [],
+        allowedSorts: ['createdAt', 'title'],
+        searchFields: ['title', 'content'],
+        allowedIncludes: [
+            { association: 'prayerSubject', attributes: ['id', 'title'] },
+        ],
+        defaultSort: 'createdAt',
+        defaultOrder: 'DESC',
+    });
 
-async function getTestimonyById(id, transaction = null) {
-    return await Testimony.findByPk(id, { transaction });
-};
+    const result = await Testimony.findAndCountAll(queryOptions);
+    return formatPaginatedResult(result, queryOptions._meta, 'testimonies');
+}
+
+async function getTestimonyById(id) {
+    return await Testimony.findByPk(id);
+}
+
+async function createTestimony(testimony, transaction = null) {
+    return await Testimony.create(testimony, { transaction });
+}
 
 async function updateTestimony(id, data, transaction = null) {
-    const [count] = await Testimony.update(data, {
+    const [updated] = await Testimony.update(data, {
         where: { id },
-        transaction,
+        transaction
     });
-    if (!count) return null;
-    return await getTestimonyById(id, transaction);
-};
+    if (updated === 0) return null;
+    return await Testimony.findByPk(id, { transaction });
+}
 
 async function deleteTestimony(id, transaction = null) {
     return await Testimony.destroy({
         where: { id },
-        transaction,
+        transaction
     });
-};
-
+}
 
 module.exports = {
-    createTestimony,
+    getTestimonies,
     getTestimonyById,
+    createTestimony,
     updateTestimony,
     deleteTestimony,
 };

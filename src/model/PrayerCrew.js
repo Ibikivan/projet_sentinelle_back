@@ -3,9 +3,9 @@ const sequelize = require("../config/database");
 
 const PrayerCrew = sequelize.define('PrayerCrew', {
     id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
-        autoIncrement: true,
     },
     name: {
         type: DataTypes.STRING,
@@ -45,6 +45,14 @@ PrayerCrew.associate = (models) => {
         foreignKey: 'crewId',
         otherKey: 'subjectId',
         as: 'prayerSubjects',
+    });
+
+    // Membership relation (N:M via pivot table)
+    PrayerCrew.belongsToMany(models.User, {
+        through: models.PrayerCrewMember,
+        foreignKey: 'prayerCrewId',
+        otherKey: 'userId',
+        as: 'members',
     });
 };
 

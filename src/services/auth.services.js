@@ -203,7 +203,7 @@ async function verifyPasswordOtp(phoneNumber, otpCode) {
 
         const cleanPhoneNumber = formatPhoneNumber(phoneNumber);
         const user = await usersRepository.getUserByPhoneNumber(cleanPhoneNumber);
-        if (!user) throw new NotFoundError(`User with phone ${cleanPhone} not found`);
+        if (!user) throw new NotFoundError(`User with phone ${cleanPhoneNumber} not found`);
 
         const otp = await authRepository.getOtpByUserIdAndType(
             user.id, 'PASSWORD_RESET',

@@ -1,4 +1,5 @@
 const sequelize = require('../config/database');
+const logger = require('../utils/logger');
 const { ServiceUnavailableError } = require('../utils/errors.classes');
 const User = require('./User');
 const City = require('./City');
@@ -9,6 +10,8 @@ const Testimony = require('./Testimony');
 const Community = require('./Community');
 const PrayerCrew = require('./PrayerCrew');
 const PrayerSession = require('./PrayerSession');
+const PrayerCrewMember = require('./PrayerCrewMember');
+const CommunityMember = require('./CommunityMember');
 
 const models = {
     User,
@@ -20,6 +23,8 @@ const models = {
     Community,
     PrayerCrew,
     PrayerSession,
+    PrayerCrewMember,
+    CommunityMember,
 };
 
 Object.values(models)
@@ -29,7 +34,7 @@ Object.values(models)
 async function testDBConnexion() {
     try {
         await sequelize.authenticate();
-        console.log('Connection to the database has been established.');
+        logger.info('Connection to the database has been established.');
     } catch (error) {
         throw new ServiceUnavailableError('Unable to connect to the database');
     };
@@ -38,7 +43,7 @@ async function testDBConnexion() {
 async function syncDB() {
     try {
         await sequelize.sync();
-        console.log('Database synchronized.');
+        logger.info('Database synchronized.');
     } catch (error) {
         throw new ServiceUnavailableError('Unable to synchronize the database');
     };

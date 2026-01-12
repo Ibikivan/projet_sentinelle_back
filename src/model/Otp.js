@@ -6,9 +6,9 @@ const OTP_TTL_MINUTES = parseInt(process.env.OTP_TTL_MINUTES, 10) || 15;
 
 const Otp = sequelize.define('Otp', {
     id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
-        autoIncrement: true,
     },
     type: {
         type: DataTypes.ENUM('PASSWORD_RESET', 'PHONE_CHANGE', 'RESTORE_ACCOUNT'),

@@ -1,59 +1,65 @@
 const { Sharing } = require("../model");
+const { buildQuery, formatPaginatedResult } = require("../utils/queryBuilder");
 
-async function createSharing(data, transaction = null) {
-    return await Sharing.create(data, { transaction });
-};
+/**
+ * Generic query method for sharings with filtering, sorting, pagination
+ * @param {Object} params - Query parameters
+ * @returns {Promise<Object>} Paginated sharings result
+ */
+async function getSharings(params = {}) {
+    const queryOptions = buildQuery(Sharing, params, {
+        allowedFilters: ['type', 'userId', 'subjectId'],
+        allowedSorts: ['createdAt', 'type'],
+        allowedIncludes: [
+            { association: 'creator', attributes: ['id', 'firstName', 'lastName'] },
+            { association: 'subject', attributes: ['id', 'title'] },
+        ],
+        defaultSort: 'createdAt',
+        defaultOrder: 'DESC',
+    });
 
-async function getSharingsBySubject(subjectId, params = {}, transaction = null) {
-  const where = { subjectId };
-  const include = [];
-  const order = [];
+    const result = await Sharing.findAndCountAll(queryOptions);
+    return formatPaginatedResult(result, queryOptions._meta, 'sharings');
+}
 
-  if (params.type) where.type = params.type;
-  if (params.userId) where.userId = params.userId;
+async function getSharingById(id) {
+    return await Sharing.findByPk(id);
+}
 
-  if (params.includeUser === 'true')
-    include.push({ association: 'creator', attributes: ['id', 'firstName', 'lastName', 'email'] });
+async function getSharingsBySubject(subjectId, params = {}) {
+    return await getSharings({ ...params, subjectId });
+}
 
-  const validSortFields = ['createdAt', 'type'];
-  if (params.sortBy && validSortFields.includes(params.sortBy)) {
-    const sortOrder = params.sortOrder === 'asc' ? 'ASC' : 'DESC';
-    order.push([params.sortBy, sortOrder]);
-  } else {
-    order.push(['createdAt', 'DESC']);
-  }
+async function getSharingsByUser(userId, params = {}) {
+    return await getSharings({ ...params, userId });
+}
 
-  const limit = params.limit ? parseInt(params.limit, 10) : undefined;
-  const page = params.page ? parseInt(params.page, 10) : undefined;
-  const offset = limit && page ? (page - 1) * limit : undefined;
-
-  return await Sharing.findAll({ where, include, order, limit, offset, transaction });
-};
-
-async function getSharingById(id, transaction = null) {
-    return await Sharing.findByPk(id, { transaction });
-};
+async function createSharing(sharing, transaction = null) {
+    return await Sharing.create(sharing, { transaction });
+}
 
 async function updateSharing(id, data, transaction = null) {
-    const [count] = await Sharing.update(data, {
+    const [updated] = await Sharing.update(data, {
         where: { id },
-        transaction,
+        transaction
     });
-    if (count === 0) return null;
-    return await getSharingById(id, transaction);
-};
+    if (updated === 0) return null;
+    return await Sharing.findByPk(id, { transaction });
+}
 
 async function deleteSharing(id, transaction = null) {
     return await Sharing.destroy({
         where: { id },
-        transaction,
+        transaction
     });
-};
+}
 
 module.exports = {
-    createSharing,
-    getSharingsBySubject,
+    getSharings,
     getSharingById,
+    getSharingsBySubject,
+    getSharingsByUser,
+    createSharing,
     updateSharing,
     deleteSharing,
 };

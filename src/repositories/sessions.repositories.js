@@ -1,118 +1,84 @@
 const { PrayerSession } = require("../model");
+const { buildQuery, formatPaginatedResult, Op } = require("../utils/queryBuilder");
 
-async function createSession(session, transaction = null) {
-    const newSession = await PrayerSession.create(session, { transaction });
-    return newSession;
+/**
+ * Generic query method for prayer sessions with filtering, sorting, pagination
+ * @param {Object} params - Query parameters
+ * @returns {Promise<Object>} Paginated sessions result
+ */
+async function getSessions(params = {}) {
+    const queryOptions = buildQuery(PrayerSession, params, {
+        allowedFilters: ['status', 'userId', 'subjectId', 'cityId'],
+        allowedSorts: ['createdAt', 'updatedAt', 'status', 'cityId'],
+        allowedIncludes: [
+            { association: 'subject', attributes: ['id', 'title', 'state', 'description'] },
+            { association: 'user', attributes: ['id', 'firstName', 'lastName', 'email'] },
+            { association: 'location', attributes: ['id', 'name', 'countryCode', 'countryName', 'continent', 'continentName'] }
+        ],
+        defaultSort: 'createdAt',
+        defaultOrder: 'DESC',
+    });
+
+    // Auto-include associations for sessions
+    queryOptions.include = [
+        { association: 'subject', attributes: ['id', 'title', 'state', 'description'] },
+        { association: 'user', attributes: ['id', 'firstName', 'lastName', 'email'] },
+        { association: 'location', attributes: ['id', 'name', 'countryCode', 'countryName', 'continent', 'continentName'], where: {} }
+    ];
+
+    // Country/Continent filters via location
+    const locationWhere = queryOptions.include[2].where;
+    if (params.countryCode) locationWhere.countryCode = params.countryCode;
+    if (params.countryName) locationWhere.countryName = params.countryName;
+    if (params.continent) locationWhere.continent = params.continent;
+    if (params.continentName) locationWhere.continentName = params.continentName;
+
+    // Remove empty where on location
+    if (Object.keys(locationWhere).length === 0) {
+        delete queryOptions.include[2].where;
+    }
+
+    const result = await PrayerSession.findAndCountAll(queryOptions);
+    return formatPaginatedResult(result, queryOptions._meta, 'sessions');
 }
 
 async function getSessionById(id) {
-    const session = await PrayerSession.findByPk(id);
-    return session;
+    return await PrayerSession.findByPk(id);
 }
 
 async function getSessionByIdWithAssociations(id) {
-    const session = await PrayerSession.findByPk(id, {
+    return await PrayerSession.findByPk(id, {
         include: [
             { association: 'subject', attributes: ['id', 'title', 'state', 'description'] },
             { association: 'user', attributes: ['id', 'firstName', 'lastName', 'email'] },
             { association: 'location', attributes: ['id', 'name', 'countryCode', 'lat', 'lng'] }
         ]
     });
-    return session;
 }
 
-async function getAllSessions(options = {}) {
-    const sessions = await PrayerSession.findAll(options);
-    return sessions;
-}
-
-async function getAllSessionsWithFilters(options = {}) {
-    const { Op } = require('sequelize');
-    
-    // Build the query options
-    const queryOptions = {
-        include: options.include || [
-            { association: 'subject', attributes: ['id', 'title', 'state', 'description'] },
-            { association: 'user', attributes: ['id', 'firstName', 'lastName', 'email'] },
-            { association: 'location', attributes: ['id', 'name', 'countryCode', 'countryName', 'continent', 'continentName'] }
-        ],
-        order: options.order || [['createdAt', 'DESC']],
-        limit: options.limit || 20,
-        offset: options.offset || 0
-    };
-    
-    // Add where clause if provided
-    if (options.where && Object.keys(options.where).length > 0) {
-        queryOptions.where = options.where;
-    }
-    
-    // Execute the query
-    const sessions = await PrayerSession.findAndCountAll(queryOptions);
-    
-    return {
-        sessions: sessions.rows,
-        pagination: {
-            total: sessions.count,
-            page: Math.floor(options.offset / options.limit) + 1,
-            limit: options.limit,
-            totalPages: Math.ceil(sessions.count / options.limit)
-        }
-    };
-}
-
-async function getSessionsByUserId(userId, config = {}, options = {}) {
-    const sessions = await PrayerSession.findAll({
-        where: { userId, ...config },
-        ...options
+async function getSessionsByUserId(userId, config = {}) {
+    return await PrayerSession.findAll({
+        where: { userId, ...config }
     });
-    return sessions;
 }
 
-async function getSessionsBySubjectId(subjectId, config = {}, options = {}) {
-    const sessions = await PrayerSession.findAll({
-        where: { subjectId, ...config },
-        ...options
+async function getSessionsBySubjectId(subjectId, config = {}) {
+    return await PrayerSession.findAll({
+        where: { subjectId, ...config }
     });
-    return sessions;
 }
 
-async function getSessionsByStatus(status, options = {}) {
-    const sessions = await PrayerSession.findAll({
-        where: { status },
-        ...options
-    });
-    return sessions;
-}
-
-async function getActiveSessions(options = {}) {
-    const sessions = await PrayerSession.findAll({
-        where: { status: 'active' },
-        ...options
-    });
-    return sessions;
-}
-
-async function getCompletedSessions(options = {}) {
-    const sessions = await PrayerSession.findAll({
-        where: { status: 'completed' },
-        ...options
-    });
-    return sessions;
-}
-
-async function getSessionsByLocation(latitude, longitude, radius = 0.01, options = {}) {
-    const sessions = await PrayerSession.findAll({
+async function getSessionsByLocation(latitude, longitude, radius = 0.01) {
+    return await PrayerSession.findAll({
         where: {
-            latitude: {
-                [require('sequelize').Op.between]: [latitude - radius, latitude + radius]
-            },
-            longitude: {
-                [require('sequelize').Op.between]: [longitude - radius, longitude + radius]
-            }
-        },
-        ...options
+            latitude: { [Op.between]: [latitude - radius, latitude + radius] },
+            longitude: { [Op.between]: [longitude - radius, longitude + radius] }
+        }
     });
-    return sessions;
+}
+
+async function createSession(session, transaction = null) {
+    return await PrayerSession.create(session, { transaction });
 }
 
 async function updateSession(id, session, transaction = null) {
@@ -126,63 +92,45 @@ async function updateSession(id, session, transaction = null) {
 async function completeSession(id, transaction = null) {
     const [updated] = await PrayerSession.update(
         { status: 'completed' },
-        {
-            where: { id },
-            transaction
-        }
+        { where: { id }, transaction }
     );
     return updated;
 }
 
 async function deleteSession(id, transaction = null) {
-    const deleted = await PrayerSession.destroy({
+    return await PrayerSession.destroy({
         where: { id },
         transaction
     });
-    return deleted;
 }
 
 async function restoreSession(id, transaction = null) {
-    const session = await PrayerSession.restore({
+    return await PrayerSession.restore({
         where: { id },
         transaction
     });
-    return session;
 }
 
 async function getSessionsCount(options = {}) {
-    const count = await PrayerSession.count(options);
-    return count;
-}
-
-async function getSessionsByDateRange(startDate, endDate, options = {}) {
-    const sessions = await PrayerSession.findAll({
-        where: {
-            createdAt: {
-                [require('sequelize').Op.between]: [startDate, endDate]
-            }
-        },
-        ...options
-    });
-    return sessions;
+    return await PrayerSession.count(options);
 }
 
 module.exports = {
-    createSession,
+    getSessions,
     getSessionById,
     getSessionByIdWithAssociations,
-    getAllSessions,
-    getAllSessionsWithFilters,
     getSessionsByUserId,
     getSessionsBySubjectId,
-    getSessionsByStatus,
-    getActiveSessions,
-    getCompletedSessions,
     getSessionsByLocation,
+    createSession,
     updateSession,
     completeSession,
     deleteSession,
     restoreSession,
     getSessionsCount,
-    getSessionsByDateRange
+    // Backward compatibility
+    getAllSessions: getSessions,
+    getAllSessionsWithFilters: getSessions,
+    getActiveSessions: (opts) => getSessions({ ...opts, status: 'active' }),
+    getCompletedSessions: (opts) => getSessions({ ...opts, status: 'completed' }),
 };

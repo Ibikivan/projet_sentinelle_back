@@ -4,9 +4,9 @@ const { ValidationError } = require("../utils/errors.classes");
 
 const Testimony = sequelize.define('Testimony', {
     id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
-        autoIncrement: true,
     },
     title: {
         type: DataTypes.STRING,

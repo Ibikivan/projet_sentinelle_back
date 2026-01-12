@@ -96,7 +96,7 @@ const handleSubjectCrewing = asyncHandler(async (req, res) => {
 
 const handleSubjectCommunitying = asyncHandler(async (req, res) => {
     const { id, action } = req.params;
-    const subject = await prayerServices.handleSubjectCommunitying(id, req.user.id, action, req.boby);
+    const subject = await prayerServices.handleSubjectCommunitying(id, req.user.id, action, req.body);
     res.status(200).json({
         message: `Prayer ${action}d`,
         data: subject

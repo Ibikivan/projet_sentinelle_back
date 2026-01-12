@@ -3,9 +3,9 @@ const sequelize = require("../config/database");
 
 const Community = sequelize.define('Community', {
     id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
-        autoIncrement: true,
     },
     name: {
         type: DataTypes.STRING,
@@ -43,6 +43,14 @@ Community.associate = (models) => {
         foreignKey: 'communityId',
         otherKey: 'subjectId',
         as: 'prayerSubjects',
+    });
+
+    // Membership relation (N:M via pivot table)
+    Community.belongsToMany(models.User, {
+        through: models.CommunityMember,
+        foreignKey: 'communityId',
+        otherKey: 'userId',
+        as: 'members',
     });
 };
 

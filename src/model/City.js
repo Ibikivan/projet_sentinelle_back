@@ -3,9 +3,9 @@ const sequelize = require('../config/database');
 
 const City = sequelize.define('City', {
     id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
-        autoIncrement: true,
     },
     adminCode1: {
         type: DataTypes.STRING,

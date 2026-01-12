@@ -4,9 +4,9 @@ const { ValidationError } = require("../utils/errors.classes");
 
 const Sharing = sequelize.define('Sharing', {
     id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
-        autoIncrement: true,
     },
     content: {
         type: DataTypes.TEXT,

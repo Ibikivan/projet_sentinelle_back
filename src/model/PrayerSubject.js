@@ -3,9 +3,9 @@ const sequelize = require("../config/database");
 
 const PrayerSubject = sequelize.define('PrayerSubject', {
     id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
-        autoIncrement: true,
     },
     title: {
         type: DataTypes.STRING,

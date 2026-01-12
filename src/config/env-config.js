@@ -1,12 +1,13 @@
+const logger = require('../utils/logger');
 
 async function envVarTest() {
     try {
         const env = require('./');
         if (env) {
-            console.log(`Environment: ${env.default.NODE_ENV}`);
+            logger.info(`Environment: ${env.default.NODE_ENV}`);
         };
     } catch (error) {
-        console.error('Env configuration error:', error);
+        logger.fatal({ err: error }, 'Env configuration error');
         process.exit(1);
     };
 };
